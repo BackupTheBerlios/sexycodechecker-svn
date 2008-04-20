@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ns1:Parameters xmlns:ns1="http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd">
+  <!-- only for test -->
+  <ns1:SourceRoot>BANG!!</ns1:SourceRoot>
+  <ns1:Ping>ping</ns1:Ping>
+</ns1:Parameters>

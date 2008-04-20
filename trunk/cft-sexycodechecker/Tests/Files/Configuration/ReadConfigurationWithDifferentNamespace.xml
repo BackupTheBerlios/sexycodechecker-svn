@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Parameters xmlns="http://montypython.com/Gumby/Parameters.xsd">
+  <!-- only for test -->
+  <SourceRoot>My brain hurts!!</SourceRoot>
+  <Ping>ping</Ping>
+</Parameters>
