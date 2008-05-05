@@ -53,6 +53,7 @@
     <Compile Include="Src\Rules.cs" />
     <Compile Include="Src\Xml.cs" />
     <Compile Include="Tests\CheckerTest.cs" />
+    <Compile Include="Tests\CommandLineTest.cs" />
     <Compile Include="Tests\ConfigurationTest.cs" />
     <Compile Include="Tests\Nunit.cs" />
     <Compile Include="Tests\Project.cs" />
