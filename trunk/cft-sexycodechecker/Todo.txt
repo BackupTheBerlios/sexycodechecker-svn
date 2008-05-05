@@ -1,0 +1,35 @@
+﻿File expansion in Windows Vista: it is on behalf of the programmer to handle it.
+
+/*
+C:\Users\cat\Documents\Visual Studio 2008\Projects\cft-sexycodechecker\cft-sexyc
+odechecker\bin\Release>cft-sexycodechecker.exe meow -v /? --help *.exe *.xml
+param 0: meow
+param 1: -v
+param 2: /?
+param 3: --help
+param 4: *.exe
+param 5: *.xml
+
+C:\Users\cat\Documents\Visual Studio 2008\Projects\cft-sexycodechecker\cft-sexyc
+odechecker\bin\Release>
+*/
+
+File expansion in Cygwin: it is on the behalf of the shell to handle it.
+
+/*
+cat@crimson /cygdrive/c/Users/cat/Documents/Visual Studio 2008/Projects/cft-sexy
+codechecker/cft-sexycodechecker/bin/Release
+$ ./cft-sexycodechecker.exe meow -v /? --help *.exe *.xml
+param 0: meow
+param 1: -v
+param 2: /?
+param 3: --help
+param 4: cft-sexycodechecker.exe
+param 5: TestResult.xml
+param 6: cft-sexycodechecker.exe.VisualState.xml
+param 7: nunit.framework.xml
+
+cat@crimson /cygdrive/c/Users/cat/Documents/Visual Studio 2008/Projects/cft-sexy
+codechecker/cft-sexycodechecker/bin/Release
+$
+*/

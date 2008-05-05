@@ -10,7 +10,7 @@ namespace Cluefultoys.Whatever {
         public Results CheckFile(string filename) {
             Results results = new Results(filename);
             // this will be ok, since the ";" are enclosed in parens
-            for (int i = 0; i < 2; i++) {
+            for (int index = 0; index < 2; index++) {
                 Console.Out.WriteLine("hello!");
             }
             return results;

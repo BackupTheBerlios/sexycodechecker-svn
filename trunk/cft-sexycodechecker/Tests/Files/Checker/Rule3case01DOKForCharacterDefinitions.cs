@@ -9,7 +9,7 @@ namespace Cluefultoys.Whatever {
 
         bool yesItIs = true;
         public boolean ThisIsNotAnArgument() {
-            char x = ';';
+            char itIsnt = ';';
             return yesItIs;
         }
 

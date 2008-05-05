@@ -18,7 +18,7 @@ namespace Cluefultoys.Sexycodechecker {
         protected Results results;
 
         protected string filename;
-        
+
         [SetUp]
         protected void SetUp() {
             checker = new Checker();
@@ -128,7 +128,7 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         [Test]
-        public void Rule1Bug200804006() {
+        public void Rule1Bug200804007() {
             string oneLine = "\n";
             foreach (char c in oneLine.ToCharArray()) {
                 lineChecker.Check(c);
@@ -191,6 +191,21 @@ namespace Cluefultoys.Sexycodechecker {
             CallCheck(GetFilename("Rule1Bug200804005.cs"));
             IsNot();
             Assert.IsTrue(results.Violations[0].ToString().Contains("705"));
+        }
+
+        [Test]
+        public void Rule1Bug200804009() {
+            // lines ending in a comment should count against total size
+            CallCheck(GetFilename("Rule1Bug200804009.cs"));
+            IsNot();
+            Assert.IsTrue(results.Violations[0].ToString().Contains("703"));
+        }
+
+        [Test]
+        public void Rule1Bug200804010() {
+            // 200804009: regression whith single-line comments : //
+            CallCheck(GetFilename("Rule1Bug200804010.cs"));
+            IsHot();
         }
 
     }
@@ -365,6 +380,17 @@ namespace Cluefultoys.Sexycodechecker {
         public void Rule2Bug200804002() {
             // else and catch statements should count against re-entrances in code
             CallCheck(GetFilename("Rule2Bug200804002.cs"));
+            // it shouldn't be hot only for a question of method length, if it gets more than one
+            // violation then there is an error outside the test
+            IsNot();
+            Assert.AreEqual(1, results.Violations.Count);
+            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+        }
+
+        [Test]
+        public void Rule2Bug200804008() {
+            // string { } and character { } should not count against re-entrances in code
+            CallCheck(GetFilename("Rule2Bug200804008.cs"));
             IsHot();
         }
 
@@ -416,6 +442,14 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         [Test]
+        public void Rule3Case01Bug200804011() {
+            // TODO the self referential bug, straroftl. Regression agains 20080409+20080410
+            CallCheck(GetFilename("Rule3Case01Bug200804011.cs"));
+            IsHot();
+        }
+
+
+        [Test]
         public void Rule3case02AKOOneStatementInTwoRows() {
             CallCheck(GetFilename("Rule3Case02AKOOneStatementInTwoRows.cs"));
             IsNot();
@@ -451,30 +485,90 @@ namespace Cluefultoys.Sexycodechecker {
             Assert.AreEqual(Violation.ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
         }
 
+    }
+
+    [TestFixture]
+    public class MethodLenghtCheckerTest : CheckerParent {
+
+        [Test]
+        public void Rule4Case01OKBase() {
+            CallCheck(GetFilename("Rule4Case01OKBase.cs"));
+            IsHot();
+        }
+
+        [Test]
+        public void Rule4Case02KOBase() {
+            CallCheck(GetFilename("Rule4Case02KOBase.cs"));
+            IsNot();
+            Assert.AreEqual(1, results.Violations.Count);
+            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+            Assert.IsTrue(results.Violations[0].ToString().Contains("base()"));
+        }
+
+        [Test]
+        public void Rule4Case03OKSimple() {
+            CallCheck(GetFilename("Rule4Case03OKSimple.cs"));
+            IsHot();
+        }
+
+        [Test]
+        public void Rule4Case04KOSimple() {
+            CallCheck(GetFilename("Rule4Case04KOSimple.cs"));
+            IsNot();
+            Assert.AreEqual(1, results.Violations.Count);
+            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+            Assert.IsTrue(results.Violations[0].ToString().Contains("CheckFile("));
+        }
+
+        [Test]
+        public void Rule4Case05OKLimitSimple() {
+            CallCheck(GetFilename("Rule4Case05OKLimitSimple.cs"));
+            IsHot();
+        }
+
+        [Test]
+        public void Rule4Case06OKLimitBase() {
+            CallCheck(GetFilename("Rule4Case06OKLimitBase.cs"));
+            IsHot();
+        }
+
+        [Test]
+        public void Rule4Case07OKLimitSimpleWithComments() {
+            CallCheck(GetFilename("Rule4Case07OKLimitSimpleWithComments.cs"));
+            IsHot();
+        }
 
     }
 
     [TestFixture]
-    public class HotProject : CheckerParent {
-
-        private const string myFilesPath = "Src/";
-
-        protected override string TestFilesPath {
-            get {
-                return myFilesPath;
-            }
-        }
+    public class VariableCheckerTest : CheckerParent {
 
         [Test]
-        public void CheckerCs() {
-            CallCheck(GetFilename("Checker.cs"));
+        public void Rule5KO() {
+            CallCheck(GetFilename("Rule5KO.cs"));
+            IsNot();
+            Assert.AreEqual(5, results.Violations.Count);
+        }
+
+
+        [Test]
+        public void Rule5OK() {
+            CallCheck(GetFilename("Rule5OK.cs"));
+            IsHot();
+        }
+
+
+        [Test]
+        public void Rule5OKStopWords() {
+            CallCheck(GetFilename("Rule5OKStopWords.cs"));
             IsHot();
         }
 
         [Test]
-        public void XmlCs() {
-            CallCheck(GetFilename("Xml.cs"));
-            IsHot();
+        public void Rule5Bug200804012() {
+            CallCheck(GetFilename("Rule5Bug200804012.cs"));
+            IsNot();
+            Assert.AreEqual(1, results.Violations.Count);
         }
 
     }

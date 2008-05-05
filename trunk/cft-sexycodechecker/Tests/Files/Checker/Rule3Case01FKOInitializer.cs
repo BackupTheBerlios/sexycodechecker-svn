@@ -7,9 +7,9 @@ namespace Cluefultoys.Whatever {
 
     public class WhateverElse01C {
 
-        public int Sum(int a, int b) {
-            int c = a, d = b;
-            return c + d;
+        public int Sum(int first, int second) {
+            int one = first, other = second;
+            return one + other;
         }
 
     }
