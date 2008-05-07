@@ -2,7 +2,7 @@
 <Parameters xmlns="http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd">
 <!-- 
        SourcePath: path to your project directory: Remember final slash or backslash
-       linux-mono: /home/cat/Works/Mono/cft-sexycodechecker/
+       linux-mono: /home/cat/Works/Mono/cft-sexycodechecker/cft-sexycodechecker/
        windows:    C:/Documents and Settings/cat/Documents/Visual Studio 2008/Projects/cft-sexycodechecker/cft-sexycodechecker/
        windows (with #develop):
                    C:/Documents and Settings/cat/Documenti/SharpDevelop Projects/cft-sexycodechecker/cft-sexycodechecker/
