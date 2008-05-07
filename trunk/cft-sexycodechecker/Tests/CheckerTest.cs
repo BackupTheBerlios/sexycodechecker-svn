@@ -1,4 +1,11 @@
-﻿using NUnit.Framework;
+﻿/* 
+ * Sexy Code Checker: An Implementation of the 700x128 Manifesto
+ * By Davide Inglima, 2008.
+ * 
+ * This source code is released under the MIT License 
+ * See Copying.txt for the full details.
+ */
+using NUnit.Framework;
 using Cluefultoys.Nunit;
 
 namespace Cluefultoys.Sexycodechecker {
@@ -448,6 +455,11 @@ namespace Cluefultoys.Sexycodechecker {
             IsHot();
         }
 
+        [Test]
+        public void Rule3Case01Bug200805001() {
+            CallCheck(GetFilename("Rule3Case01Bug200805001.cs"));
+            IsHot();
+        }
 
         [Test]
         public void Rule3case02AKOOneStatementInTwoRows() {
@@ -462,7 +474,7 @@ namespace Cluefultoys.Sexycodechecker {
             CallCheck(GetFilename("Rule3Case02Bug200804006.cs"));
             IsHot();
         }
-
+       
         [Test]
         public void Rule3Case02BKOOneMethodDeclarationInTwoRows() {
             CallCheck(GetFilename("Rule3Case02BKOOneMethodDeclarationInTwoRows.cs"));
@@ -569,6 +581,12 @@ namespace Cluefultoys.Sexycodechecker {
             CallCheck(GetFilename("Rule5Bug200804012.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
+        }
+
+        [Test]
+        public void Rule5Bug200805002() {
+            CallCheck(GetFilename("Rule5Bug200805002.cs"));
+            IsHot();
         }
 
     }

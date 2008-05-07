@@ -1,4 +1,11 @@
-﻿using System.Collections.Generic;
+﻿/* 
+ * Sexy Code Checker: An Implementation of the 700x128 Manifesto
+ * By Davide Inglima, 2008.
+ * 
+ * This source code is released under the MIT License
+ * See Copying.txt for the full details.
+ */
+using System.Collections.Generic;
 
 namespace Cluefultoys.Sexycodechecker {
 
@@ -302,7 +309,6 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Add(new Handler<char>(RecordLastCharacter, true));
         }
 
-
         private void RecordFirstCharacter() {
             if (firstCharacterInLine == Constants.ASCII_CR) {
                 firstCharacterInLine = currentCharacter;
@@ -313,6 +319,24 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Execute(currentCharacter);
         }
 
+        private const string testUnicode = "\xEF\xBB\xBF\x2F\x2A";
+        
+        /// <summary>
+        /// We are going to test if this line should be granted an exception.
+        /// The line is corrupt by spurious parsed data that do not affect 
+        /// the other tests. This case hits only with a multiline comment starting
+        /// at the first character, under win2k and vista.
+        /// </summary>
+        /// <returns>true if the parser is on the first line and if the violation 
+        /// would be cause by a beginning "/*"</returns>
+        private bool IsLineUnicodeException() {
+            if (FileLenght > 1) {
+                return false;
+            }
+            
+            return LastCharacter == '/' && currentLine.Contains(testUnicode);
+        }
+
         protected override void Clear() {
             if (delayViolation != null) {
                 if (!IsInitializingTheBaseClass()) {
@@ -320,7 +344,7 @@ namespace Cluefultoys.Sexycodechecker {
                 }
                 delayViolation = null;
             }
-            if (parensLevel > 0 || !tailChars.Contains(LastCharacter)) {
+            if ((parensLevel > 0 || !tailChars.Contains(LastCharacter)) && !IsLineUnicodeException()) {
                 delayViolation = OneLinePerStatement();
                 if (')' != LastCharacter) {
                     violations.Add(delayViolation);
@@ -381,7 +405,7 @@ namespace Cluefultoys.Sexycodechecker {
             semiColumns = 0;
             commas = 0;
         }
-
+        
         private Violation OneStatementPerLine() {
             string message = "This line has more than one statement";
             return new Violation(Violation.ViolationType.OneStatementPerLine, message, FileLenght, currentLine);
@@ -541,9 +565,18 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Execute(currentCharacter);
         }
 
+        /// <summary>
+        /// We are going to exclude the first character from the check
+        /// The cause is the same of IsLineUnicodeException(), but in this
+        /// case we are allowed to just skip the first character (unlike above,
+        /// we are also outside the handling of a newline).
+        /// </summary>
+        private bool excludeFirstCharacter = false;
+        
         protected override bool ValidCharacter() {
-            return true;
+            bool result = excludeFirstCharacter;
+            excludeFirstCharacter = true;
+            return result;
         }
     }
-
 }

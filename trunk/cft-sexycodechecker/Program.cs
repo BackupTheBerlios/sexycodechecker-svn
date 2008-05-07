@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* 
+ * Sexy Code Checker: An Implementation of the 700x128 Manifesto
+ * By Davide Inglima, 2008.
+ * 
+ * This source code is released under the MIT License
+ * See Copying.txt for the full details.
+ */
+using System;
 
 namespace Cluefultoys.Sexycodechecker {
     class Program {
