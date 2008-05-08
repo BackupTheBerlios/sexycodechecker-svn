@@ -1,0 +1,50 @@
+PROJECT HIERARCHY *****************************************************
+
+projectname\
+Will contain the solution files for various environments
+
+projectname\projectname\
+Also called the source root. Will contain the Program.cs file with the
+main method.
+
+projectname\projectname\Src
+The Live Application Source code must go here
+
+projectname\projectname\Tests
+NUnit source code and resources must go here
+
+projectname\projectname\bin\
+Created by the IDE, excluded from the SVN tree
+
+projectname\projectname\obj\
+Created by the IDE, excluded from the SVN tree
+Eventually, build-time artifacts made by us can go here
+
+PROTOTYPE FILES *******************************************************
+
+Q: Why are you using a Properties.xml.prototype file and you are not 
+   posting the xml file directly to svn?
+
+A: Because it has parameters that are tied to the local machine I am 
+   using, and I also do not want to wake up one morning finding that 
+   my Prototype.xml has been changed because someone committed his own 
+   version accidentally.
+   
+List of Prototype Files: 
+
+Test\Resources\Parameters.xml.prototype
+
+CHECK-IN CYCLE ********************************************************
+
+Before you check in your code:
+
+1) check out the latest version of all SVN code
+2) make sure it's buildable
+3) make sure it satisfies the NUnit Tests
+4) make sure it's sexy (there should be an NUnit text fixture created
+   expecially for this check)
+5) make sure it does not break new FxCop rules
+
+The only FxCop rules that you are allowed to break are the one related
+to NUnit classes, AND the "strong signing whatever" rule because you
+are still making FxCop run on a debug artifact.

@@ -1,4 +1,21 @@
-﻿File expansion in Windows Vista: it is on behalf of the programmer to handle it.
+﻿********************************************************************************
+[1] CHECKER AND RULES INTERACTION **********************************************
+
+Rules have a vertical hierarchy. Common variables are defined in the abstract 
+classes, and clients use them. 
+
+The pattern should become this:
+
+A Context will be shared among all rules.
+
+The common handlings will be done once by a common preprocessor before the rules.
+
+The rules will read state from the context, and do only their own peculiar part.
+
+This will solve still unsolved FxCop violations.
+
+[2] CALLING FROM THE COMMAND LINE **********************************************
+File expansion in Windows Vista: it is on behalf of the programmer to handle it.
 
 /*
 C:\Users\cat\Documents\Visual Studio 2008\Projects\cft-sexycodechecker\cft-sexyc

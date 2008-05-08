@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Cluefultoys</RootNamespace>
-    <AssemblyName>cft-sexycodechecker</AssemblyName>
+    <AssemblyName>SexyCodeChecker</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -41,13 +41,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Src\Checker.cs" />
     <Compile Include="Src\Handler.cs" />
+    <Compile Include="Src\Nunit.cs" />
     <Compile Include="Src\Rules.cs" />
     <Compile Include="Src\Xml.cs" />
     <Compile Include="Tests\CheckerTest.cs" />
     <Compile Include="Tests\CommandLineTest.cs" />
     <Compile Include="Tests\ConfigurationTest.cs" />
-    <Compile Include="Tests\Nunit.cs" />
-    <Compile Include="Tests\Project.cs" />
+    <Compile Include="Tests\ProjectTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Tests\Resources\FileToEmbed.txt" />

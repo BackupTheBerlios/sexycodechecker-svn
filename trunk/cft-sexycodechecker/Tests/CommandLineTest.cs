@@ -9,10 +9,10 @@ using NUnit.Framework;
 using Cluefultoys.Xml;
 using Cluefultoys.Nunit;
 
-namespace Cluefultoys.CommandLine {
+namespace Cluefultoys.CommandLine.Tests {
 
     [TestFixture]
-    public class CommandLineTest : TestBase {
+    public class TestCommandLine : BaseTest {
 
         private const string myFilesPath = "Tests/Files/Configuration/";
 

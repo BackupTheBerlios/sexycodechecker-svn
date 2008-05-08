@@ -7,10 +7,11 @@
  */
 using NUnit.Framework;
 using Cluefultoys.Nunit;
+using Cluefultoys.Sexycodechecker;
 
-namespace Cluefultoys.Sexycodechecker {
+namespace Cluefultoys.Sexycodechecker.Tests {
 
-    public abstract class CheckerParent : TestBase {
+    public abstract class TestParent : BaseTest {
 
         private const string myFilesPath = "Tests/Files/Checker/";
 
@@ -64,28 +65,24 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     [TestFixture]
-    public class CheckerTest : CheckerParent {
+    public class TestChecker : TestParent {
 
         [Test]
         public void FileNotFound() {
             CallCheck("C:/BLAH");
             IsNot();
-            Assert.IsInstanceOfType(Violation.ViolationType.FileNotFound.GetType(), results.Violations[0].KindOfViolation, "File {1} should report violation {2}", filename, Violation.ViolationType.FileNotFound);
+            Assert.IsInstanceOfType(ViolationType.FileNotFound.GetType(), results.Violations[0].KindOfViolation, "File {1} should report violation {2}", filename, ViolationType.FileNotFound);
         }
 
         [Test]
         public void ValidSource() {
-            CallCheck(GetFilename("ValidSource.cs"));
+            CallCheck(GetFileName("ValidSource.cs"));
             IsHot();
         }
 
     }
 
-    internal class MockLineChecker : HeightRule {
-
-        public MockLineChecker(string filename)
-            : base(filename) {
-        }
+    internal class TestCheckerMockLine : HeightRule {
 
         public bool IsInMultilineComment {
             get {
@@ -102,13 +99,13 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     [TestFixture]
-    public class HeightRuleTest {
+    public class TestHeightRule {
 
-        private MockLineChecker lineChecker;
+        private TestCheckerMockLine lineChecker;
 
         [SetUp]
         protected void SetUp() {
-            lineChecker = new MockLineChecker("test");
+            lineChecker = new TestCheckerMockLine();
         }
 
         [TearDown]
@@ -159,43 +156,43 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     [TestFixture]
-    public class HeightRuleCheckerTest : CheckerParent {
+    public class TestCheckerHeightRule : TestParent {
 
         [Test]
         public void Rule1OK() {
-            CallCheck(GetFilename("Rule1OK.cs"));
+            CallCheck(GetFileName("Rule1OK.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule1KO() {
-            CallCheck(GetFilename("Rule1KO.cs"));
+            CallCheck(GetFileName("Rule1KO.cs"));
             IsNot();
         }
 
         [Test]
         public void Rule1OKComments() {
-            CallCheck(GetFilename("Rule1OKComments.cs"));
+            CallCheck(GetFileName("Rule1OKComments.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule1OKMultilineComments() {
-            CallCheck(GetFilename("Rule1OKMultilineComments.cs"));
+            CallCheck(GetFileName("Rule1OKMultilineComments.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule1Bug200804003() {
             // end of multiline comments should be not counted
-            CallCheck(GetFilename("Rule1Bug200804003.cs"));
+            CallCheck(GetFileName("Rule1Bug200804003.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule1Bug200804005() {
             // whitespace ONLY lines should count against total size
-            CallCheck(GetFilename("Rule1Bug200804005.cs"));
+            CallCheck(GetFileName("Rule1Bug200804005.cs"));
             IsNot();
             Assert.IsTrue(results.Violations[0].ToString().Contains("705"));
         }
@@ -203,7 +200,7 @@ namespace Cluefultoys.Sexycodechecker {
         [Test]
         public void Rule1Bug200804009() {
             // lines ending in a comment should count against total size
-            CallCheck(GetFilename("Rule1Bug200804009.cs"));
+            CallCheck(GetFileName("Rule1Bug200804009.cs"));
             IsNot();
             Assert.IsTrue(results.Violations[0].ToString().Contains("703"));
         }
@@ -211,14 +208,14 @@ namespace Cluefultoys.Sexycodechecker {
         [Test]
         public void Rule1Bug200804010() {
             // 200804009: regression whith single-line comments : //
-            CallCheck(GetFilename("Rule1Bug200804010.cs"));
+            CallCheck(GetFileName("Rule1Bug200804010.cs"));
             IsHot();
         }
 
     }
 
     [TestFixture]
-    public class WidthRuleTest {
+    public class TestWidthRule {
 
         private const string TEST_FILENAME = "blah";
 
@@ -361,17 +358,17 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     [TestFixture]
-    public class WidthtRuleCheckerTest : CheckerParent {
+    public class TestCheckerWidthtRule : TestParent {
 
         [Test]
         public void Rule2OK() {
-            CallCheck(GetFilename("Rule2OK.cs"));
+            CallCheck(GetFileName("Rule2OK.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule2KO() {
-            CallCheck(GetFilename("Rule2KO.cs"));
+            CallCheck(GetFileName("Rule2KO.cs"));
             IsNot();
         }
 
@@ -379,185 +376,185 @@ namespace Cluefultoys.Sexycodechecker {
         //IDEA, property bug
         public void Rule2Bug200804001() {
             // a single-line comment should stop parsing for extra characters
-            CallCheck(GetFilename("Rule2Bug200804001.cs"));
+            CallCheck(GetFileName("Rule2Bug200804001.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule2Bug200804002() {
             // else and catch statements should count against re-entrances in code
-            CallCheck(GetFilename("Rule2Bug200804002.cs"));
+            CallCheck(GetFileName("Rule2Bug200804002.cs"));
             // it shouldn't be hot only for a question of method length, if it gets more than one
             // violation then there is an error outside the test
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule2Bug200804008() {
             // string { } and character { } should not count against re-entrances in code
-            CallCheck(GetFilename("Rule2Bug200804008.cs"));
+            CallCheck(GetFileName("Rule2Bug200804008.cs"));
             IsHot();
         }
 
     }
 
     [TestFixture]
-    public class UniqueLineCheckerTest : CheckerParent {
+    public class TestCheckerUniqueLine : TestParent {
 
         [Test]
         public void Rule3case01AOKOneStatementInARow() {
-            CallCheck(GetFilename("Rule3Case01AOKOneStatementInARow.cs"));
+            CallCheck(GetFileName("Rule3Case01AOKOneStatementInARow.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3case01BKOTwoStatementsInARow() {
-            CallCheck(GetFilename("Rule3Case01BKOTwoStatementsInARow.cs"));
+            CallCheck(GetFileName("Rule3Case01BKOTwoStatementsInARow.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule3case01COKForLoops() {
-            CallCheck(GetFilename("Rule3Case01COKForLoops.cs"));
+            CallCheck(GetFileName("Rule3Case01COKForLoops.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3case01DOKForCharacterDefinitions() {
-            CallCheck(GetFilename("Rule3Case01DOKForCharacterDefinitions.cs"));
+            CallCheck(GetFileName("Rule3Case01DOKForCharacterDefinitions.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3case01EKOInStrings() {
-            CallCheck(GetFilename("Rule3Case01EKOInStrings.cs"));
+            CallCheck(GetFileName("Rule3Case01EKOInStrings.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule3Case01FKOInitializer() {
-            CallCheck(GetFilename("Rule3Case01FKOInitializer.cs"));
+            CallCheck(GetFileName("Rule3Case01FKOInitializer.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule3Case01Bug200804011() {
             // TODO the self referential bug, straroftl. Regression agains 20080409+20080410
-            CallCheck(GetFilename("Rule3Case01Bug200804011.cs"));
+            CallCheck(GetFileName("Rule3Case01Bug200804011.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3Case01Bug200805001() {
-            CallCheck(GetFilename("Rule3Case01Bug200805001.cs"));
+            CallCheck(GetFileName("Rule3Case01Bug200805001.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3case02AKOOneStatementInTwoRows() {
-            CallCheck(GetFilename("Rule3Case02AKOOneStatementInTwoRows.cs"));
+            CallCheck(GetFileName("Rule3Case02AKOOneStatementInTwoRows.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule3Case02Bug200804006() {
-            CallCheck(GetFilename("Rule3Case02Bug200804006.cs"));
+            CallCheck(GetFileName("Rule3Case02Bug200804006.cs"));
             IsHot();
         }
        
         [Test]
         public void Rule3Case02BKOOneMethodDeclarationInTwoRows() {
-            CallCheck(GetFilename("Rule3Case02BKOOneMethodDeclarationInTwoRows.cs"));
+            CallCheck(GetFileName("Rule3Case02BKOOneMethodDeclarationInTwoRows.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
         }
 
         [Test]
         public void Rule3Case02COKItIsCallingTheThisOrBaseConstructor() {
-            CallCheck(GetFilename("Rule3Case02COKItIsCallingTheThisOrBaseConstructor.cs"));
+            CallCheck(GetFileName("Rule3Case02COKItIsCallingTheThisOrBaseConstructor.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule3Case02DKOIHateMicrosoftFormatting() {
-            CallCheck(GetFilename("Rule3Case02DKOIHateMicrosoftFormatting.cs"));
+            CallCheck(GetFileName("Rule3Case02DKOIHateMicrosoftFormatting.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
         }
 
     }
 
     [TestFixture]
-    public class MethodLenghtCheckerTest : CheckerParent {
+    public class TestCheckerMethodLenght : TestParent {
 
         [Test]
         public void Rule4Case01OKBase() {
-            CallCheck(GetFilename("Rule4Case01OKBase.cs"));
+            CallCheck(GetFileName("Rule4Case01OKBase.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule4Case02KOBase() {
-            CallCheck(GetFilename("Rule4Case02KOBase.cs"));
+            CallCheck(GetFileName("Rule4Case02KOBase.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
             Assert.IsTrue(results.Violations[0].ToString().Contains("base()"));
         }
 
         [Test]
         public void Rule4Case03OKSimple() {
-            CallCheck(GetFilename("Rule4Case03OKSimple.cs"));
+            CallCheck(GetFileName("Rule4Case03OKSimple.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule4Case04KOSimple() {
-            CallCheck(GetFilename("Rule4Case04KOSimple.cs"));
+            CallCheck(GetFileName("Rule4Case04KOSimple.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
-            Assert.AreEqual(Violation.ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
             Assert.IsTrue(results.Violations[0].ToString().Contains("CheckFile("));
         }
 
         [Test]
         public void Rule4Case05OKLimitSimple() {
-            CallCheck(GetFilename("Rule4Case05OKLimitSimple.cs"));
+            CallCheck(GetFileName("Rule4Case05OKLimitSimple.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule4Case06OKLimitBase() {
-            CallCheck(GetFilename("Rule4Case06OKLimitBase.cs"));
+            CallCheck(GetFileName("Rule4Case06OKLimitBase.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule4Case07OKLimitSimpleWithComments() {
-            CallCheck(GetFilename("Rule4Case07OKLimitSimpleWithComments.cs"));
+            CallCheck(GetFileName("Rule4Case07OKLimitSimpleWithComments.cs"));
             IsHot();
         }
 
     }
 
     [TestFixture]
-    public class VariableCheckerTest : CheckerParent {
+    public class TestCheckerVariableLenghtRule : TestParent {
 
         [Test]
         public void Rule5KO() {
-            CallCheck(GetFilename("Rule5KO.cs"));
+            CallCheck(GetFileName("Rule5KO.cs"));
             IsNot();
             Assert.AreEqual(5, results.Violations.Count);
         }
@@ -565,27 +562,27 @@ namespace Cluefultoys.Sexycodechecker {
 
         [Test]
         public void Rule5OK() {
-            CallCheck(GetFilename("Rule5OK.cs"));
+            CallCheck(GetFileName("Rule5OK.cs"));
             IsHot();
         }
 
 
         [Test]
         public void Rule5OKStopWords() {
-            CallCheck(GetFilename("Rule5OKStopWords.cs"));
+            CallCheck(GetFileName("Rule5OKStopWords.cs"));
             IsHot();
         }
 
         [Test]
         public void Rule5Bug200804012() {
-            CallCheck(GetFilename("Rule5Bug200804012.cs"));
+            CallCheck(GetFileName("Rule5Bug200804012.cs"));
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
         }
 
         [Test]
         public void Rule5Bug200805002() {
-            CallCheck(GetFilename("Rule5Bug200805002.cs"));
+            CallCheck(GetFileName("Rule5Bug200805002.cs"));
             IsHot();
         }
 

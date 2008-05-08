@@ -13,10 +13,10 @@ using NUnit.Framework;
 using Cluefultoys.Xml;
 using Cluefultoys.Nunit;
 
-namespace Cluefultoys.Xml {
+namespace Cluefultoys.Xml.Tests {
 
     [TestFixture]
-    public class LoadingTest : TestBase {
+    public class LoadingTest : BaseTest {
 
         private const string myFilesPath = "Tests/Files/Configuration/";
 
@@ -55,7 +55,7 @@ namespace Cluefultoys.Xml {
 
         [Test]
         public void GetConfiguration() {
-            string result = Configuration.GetConfigurationString(TEST_PARAMETERS_RESOURCE, TEST_PARAMETERS_NAMESPACE, "Ping");
+            string result = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, "Ping");
 
             Assert.AreEqual("ping", result);
         }
@@ -87,7 +87,7 @@ namespace Cluefultoys.Xml {
         [Test]
         public void ReadConfigurationWithDefaultNamespace() {
             using (Stream stream = OpenFile("ReadConfigurationWithDefaultNamespace.xml")) {
-                string result = Utilities.GetString(stream, TEST_PARAMETERS_NAMESPACE, "Ping");
+                string result = Utilities.GetString(stream, ParametersNamespace, "Ping");
                 Assert.AreEqual("ping", result);
             }
         }
@@ -95,7 +95,7 @@ namespace Cluefultoys.Xml {
         [Test]
         public void ReadConfigurationWithAliasedNamespace() {
             using (Stream stream = OpenFile("ReadConfigurationWithAliasedNamespace.xml")) {
-                string result = Utilities.GetString(stream, TEST_PARAMETERS_NAMESPACE, "Ping");
+                string result = Utilities.GetString(stream, ParametersNamespace, "Ping");
                 Assert.AreEqual("ping", result);
             }
         }
@@ -103,7 +103,7 @@ namespace Cluefultoys.Xml {
         [Test]
         public void ReadConfigurationWithNoNamespace() {
             using (Stream stream = OpenFile("ReadConfigurationWithNoNamespace.xml")) {
-                string result = Utilities.GetString(stream, TEST_PARAMETERS_NAMESPACE, "Ping");
+                string result = Utilities.GetString(stream, ParametersNamespace, "Ping");
                 Assert.AreEqual("ping", result);
             }
         }
@@ -111,7 +111,7 @@ namespace Cluefultoys.Xml {
         [Test]
         public void ReadConfigurationWithDifferentNamespace() {
             using (Stream stream = OpenFile("ReadConfigurationWithDifferentNamespace.xml")) {
-                string result = Utilities.GetString(stream, TEST_PARAMETERS_NAMESPACE, "Ping");
+                string result = Utilities.GetString(stream, ParametersNamespace, "Ping");
                 Assert.IsNull(result);
             }
         }

@@ -6,8 +6,9 @@
  * See Copying.txt for the full details.
  */
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-    
+
 namespace Cluefultoys.Sexycodechecker {
 
     // TODO: name
@@ -26,13 +27,24 @@ namespace Cluefultoys.Sexycodechecker {
     /// </summary>
     public class Checker {
 
-        // TODO: character recognition needs to change with unicode support.
-        public Results CheckFile(string filename) {
-            List<Rule> rules = GetRules(filename);
+        private List<Rule> rules;
 
-            Results results = new Results(filename);
+        public Checker() {
+            rules = new List<Rule>();
+            rules.Add(new HeightRule());
+            rules.Add(new WidthRule());
+            rules.Add(new OneStatementPerLineRule());
+            rules.Add(new OneLinePerStatementRule());
+            rules.Add(new MethodHeightRule());
+            rules.Add(new VariableLenghtRule());
+        }
+
+        // TODO: character recognition needs to change with unicode support.
+        // TODO: must become stream
+        public Results CheckFile(string fileName) {
+            Results results = new Results(fileName);
             try {
-                using (FileStream file = File.Open(filename, FileMode.Open)) {
+                using (FileStream file = File.Open(fileName, FileMode.Open)) {
                     while (file.Position < file.Length) {
                         char currentCharacter = (char)file.ReadByte();
                         foreach (Rule rule in rules) {
@@ -43,26 +55,13 @@ namespace Cluefultoys.Sexycodechecker {
                         rule.ReportViolations(results);
                     }
                 }
-            } catch (FileNotFoundException fne) {
-                results.Add(FileNotFoundViolation(fne, filename));
+            } catch (FileNotFoundException exception) {
+                Violation violation = new Violation(ViolationType.FileNotFound, exception.Message, Constants.NO_LINE, fileName);
+                results.Add(violation); 
             }
             return results;
         }
 
-        private Violation FileNotFoundViolation(FileNotFoundException fne, string fileName) {
-            return new Violation(Violation.ViolationType.FileNotFound, fne.Message, Constants.NO_LINE, fileName);
-        }
-
-        private List<Rule> GetRules(string filename) {
-            List<Rule> rules = new List<Rule>();
-            rules.Add(new HeightRule(filename));
-            rules.Add(new WidthRule());
-            rules.Add(new OneStatementPerLineRule());
-            rules.Add(new OneLinePerStatementRule());
-            rules.Add(new MethodHeightRule());
-            rules.Add(new VariableLenghtRule());
-            return rules;
-        }
     }
 
     public class Results {
@@ -72,14 +71,14 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         private string myFileName;
-        public string Filename {
+        public string FileName {
             get {
                 return myFileName;
             }
         }
 
-        private List<Violation> myViolations = new List<Violation>();
-        public List<Violation> Violations {
+        private Collection<Violation> myViolations = new Collection<Violation>();
+        public  Collection<Violation> Violations {
             get {
                 return myViolations;
             }
@@ -100,16 +99,6 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     public class Violation {
-
-        public enum ViolationType {
-            FileNotFound,
-            FileTooLong,
-            LineTooWide,
-            OneStatementPerLine,    // rule 3 first part
-            OneLinePerStatement,    // rule 3 second part
-            MethodTooLong,          // rule 4
-            VariableTooShort,       // rule 5
-        }
 
         private ViolationType myType;
         public ViolationType KindOfViolation {
@@ -138,8 +127,21 @@ namespace Cluefultoys.Sexycodechecker {
 
     }
 
-    internal class Constants {
+    public enum ViolationType {
+        FileNotFound,
+        FileTooLong,
+        LineTooWide,
+        OneStatementPerLine,    // rule 3 first part
+        OneLinePerStatement,    // rule 3 second part
+        MethodTooLong,          // rule 4
+        VariableTooShort,       // rule 5
+    }
+    
+    internal sealed class Constants {
 
+        private Constants() {
+        }
+        
         internal const int NO_LINE = 0;
 
         internal const int ALLOWABLE_CHARACTERS_PER_LINE = 128;

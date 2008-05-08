@@ -2,7 +2,7 @@
  * Sexy Code Checker: An Implementation of the 700x128 Manifesto
  * By Davide Inglima, 2008.
  * 
- * This source code is released under the MIT License 
+ * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
 using System.IO;
@@ -11,8 +11,13 @@ using System.Xml;
 
 namespace Cluefultoys.Xml {
 
-    public class Configuration {
+    // TODO: Study Microsoft Configuration
+    // TODO: Or Try to supplant singleton with DI
+    public sealed class CftConfiguration {
 
+        private CftConfiguration() {
+        }
+        
         public static string GetConfigurationString(string resourceName, string xmlNamespace, string element) {
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream stream = assembly.GetManifestResourceStream(resourceName)) {
@@ -22,7 +27,11 @@ namespace Cluefultoys.Xml {
 
     }
 
-    public class Utilities {
+    // TODO: Try to supplant singleton with DI
+    public sealed class Utilities {
+
+        private Utilities() {
+        }
 
         private const string localNamespace = "ns1";
 

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -34,3 +35,11 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+/*
+    Category     : Microsoft.Design  (String)
+    CheckId      : CA1014  (String)
+    Resolution   : "Mark 'SexyCodeChecker.exe' with CLSCompliant(true) 
+                   because it exposes externally visible types."
+ */
+[assembly: CLSCompliant(true)]

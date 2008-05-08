@@ -10,18 +10,18 @@ using Cluefultoys.Xml;
 
 namespace Cluefultoys.Nunit {
 
-    public abstract class TestBase {
+    public abstract class BaseTest {
 
-        protected const string TEST_PARAMETERS_RESOURCE = "Cluefultoys.Tests.Resources.Parameters.xml";
+        protected const string ParametersResource = "Cluefultoys.Tests.Resources.Parameters.xml";
 
-        protected const string TEST_PARAMETERS_NAMESPACE = "http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd";
+        protected const string ParametersNamespace = "http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd";
 
-        protected const string SOURCE_ROOT = "SourceRoot";
+        protected const string SourceRoot = "SourceRoot";
 
         // private Assembly assembly = Assembly.GetExecutingAssembly();
 
-        public TestBase() {
-            mySourceRootPath = Configuration.GetConfigurationString(TEST_PARAMETERS_RESOURCE, TEST_PARAMETERS_NAMESPACE, SOURCE_ROOT);
+        protected BaseTest() {
+            mySourceRootPath = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, SourceRoot);
         }
 
         private string mySourceRootPath;
@@ -39,13 +39,13 @@ namespace Cluefultoys.Nunit {
             get;
         }
 
-        protected Stream OpenFile(string filename) {
-            Stream stream = File.Open(GetFilename(filename), FileMode.Open);
+        protected Stream OpenFile(string fileName) {
+            Stream stream = File.Open(GetFileName(fileName), FileMode.Open);
             return stream;
         }
 
-        protected string GetFilename(string filename) {
-            return SourceRootPath + TestFilesPath + filename;
+        protected string GetFileName(string fileName) {
+            return SourceRootPath + TestFilesPath + fileName;
         }
 
     }

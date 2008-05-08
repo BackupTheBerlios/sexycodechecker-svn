@@ -3,9 +3,11 @@ using System.Collections.Generic;
 namespace basic {
     class basicClass {
         private void whatever() {
-            List<object> objects = null;
+            List<T> objects = null;
             if (objects != null) {
-                foreach (object obj in objects) ;
+                foreach (T obj in objects) {
+                    object something = obj as object;
+                }
             }
         }
     }

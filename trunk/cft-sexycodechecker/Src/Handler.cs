@@ -10,77 +10,77 @@ using System.Collections.Generic;
 
 namespace Cluefultoys.Sexycodechecker {
 
-    public class Handler<Type> where Type : IComparable<Type> {
+    public delegate void Executor();
 
-        public delegate void Executor();
+    public delegate bool Check<T>(T target);
 
-        public delegate bool Check(Type target);
+    public class Handler<T> where T : IComparable<T> {
 
-        private Type toHandle;
+        private T toHandle;
 
-        private Check Condition;
+        private Check<T> condition;
 
-        private Executor Execute;
+        private Executor toExecute;
 
         private bool stop;
 
-        public Handler(Executor DefaultExecute, bool stop) {
-            this.Condition = IsDefault;
-            this.Execute = DefaultExecute;
+        public Handler(Executor executeAsDefault, bool stop) {
+            this.condition = DefaultCondition;
+            this.toExecute = executeAsDefault;
             this.stop = stop;
         }
 
-        public Handler(Check Condition, Executor Execute, bool stop) {
-            this.Condition = Condition;
-            this.Execute = Execute;
+        public Handler(Check<T> condition, Executor toExecute, bool stop) {
+            this.condition = condition;
+            this.toExecute = toExecute;
             this.stop = stop;
         }
 
-        public Handler(Check Condition) {
-            this.Condition = Condition;
-            this.Execute = DefaultExecute;
+        public Handler(Check<T> condition) {
+            this.condition = condition;
+            this.toExecute = DefaultExecution;
             this.stop = true;
         }
 
-        public Handler(Type targetToHandle, Executor Execute, bool stop) {
+        public Handler(T targetToHandle, Executor toExecute, bool stop) {
             this.toHandle = targetToHandle;
-            this.Condition = SimpleCheck;
-            this.Execute = Execute;
+            this.condition = SimpleCheck;
+            this.toExecute = toExecute;
             this.stop = stop;
         }
 
-        private bool SimpleCheck(Type target) {
+        private bool SimpleCheck(T target) {
             return toHandle.CompareTo(target) == 0;
         }
 
-        private bool IsDefault(Type target) {
+        private bool DefaultCondition(T target) {
             return true;
         }
 
-        public bool Handle(Type target) {
-            if (Condition(target)) {
-                Execute();
+        public bool Handle(T target) {
+            if (condition(target)) {
+                toExecute();
                 return stop;
             }
             return false;
         }
 
-        private void DefaultExecute() {
+        private void DefaultExecution() {
             // No-operation executor, for stop-only conditions.
         }
     }
 
-    public class Chain<Type> where Type : IComparable<Type> {
+    public class Chain<T> where T : IComparable<T> {
 
-        private List<Handler<Type>> Handlers = new List<Handler<Type>>();
+        private List<Handler<T>> Handlers = new List<Handler<T>>();
 
-        public void Add(Handler<Type> handler) {
+        public void Add(Handler<T> handler) {
             Handlers.Add(handler);
         }
 
-        public void Execute(Type target) {
+        public void Execute(T target) {
             bool stop = false;
-            IEnumerator<Handler<Type>> enumerator = Handlers.GetEnumerator();
+            IEnumerator<Handler<T>> enumerator = Handlers.GetEnumerator();
             while (!stop && enumerator.MoveNext()) {
                 stop = enumerator.Current.Handle(target);
             }

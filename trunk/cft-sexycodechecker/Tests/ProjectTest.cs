@@ -8,10 +8,10 @@
 using NUnit.Framework;
 using Cluefultoys.Nunit;
 
-namespace Cluefultoys.Sexycodechecker {
+namespace Cluefultoys.Sexycodechecker.Tests {
 
     [TestFixture]
-    public class HotProject : CheckerParent {
+    public class TestHotProject : TestParent {
 
         private const string myFilesPath = "Src/";
 
@@ -22,29 +22,38 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         [Test]
-        public void Checker() {
-            CallCheck(GetFilename("Checker.cs"));
+        // Identifier 'Cluefultoys.Sexycodechecker.Tests.TestHotProject.Checker()' 
+        // differing only in case is not CLS-compliant (CS3005)
+        public void Checkr() {
+            CallCheck(GetFileName("Checker.cs"));
             IsHot();
         }
 
         [Test]
         public void Xml() {
-            CallCheck(GetFilename("Xml.cs"));
+            CallCheck(GetFileName("Xml.cs"));
             IsHot();
         }
 
         [Test]
         public void Handler() {
-            CallCheck(GetFilename("Handler.cs"));
+            CallCheck(GetFileName("Handler.cs"));
             IsHot();
         }
 
         [Test]
         public void Rules() {
-            CallCheck(GetFilename("Rules.cs"));
+            CallCheck(GetFileName("Rules.cs"));
             IsHot();
         }
 
+        [Test]
+        public void Nunit() {
+            CallCheck(GetFileName("Nunit.cs"));
+            IsHot();
+        }
+
+        
     }
 
 
