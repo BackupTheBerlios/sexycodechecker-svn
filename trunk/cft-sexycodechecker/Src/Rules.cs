@@ -358,10 +358,12 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Add(new Handler<char>(RecordLastCharacter, false));
             chain.Add(new Handler<char>(',', HandleCommas, true));
             chain.Add(new Handler<char>(';', HandleSemiColumns, true));
+            chain.Add(new Handler<char>('{', HandleParensLevelUp, true));
             chain.Add(new Handler<char>('<', HandleParensLevelUp, true));
             chain.Add(new Handler<char>('(', HandleParensLevelUp, true));
             chain.Add(new Handler<char>('>', HandleParensLevelDown, true));
             chain.Add(new Handler<char>(')', HandleParensLevelDown, true));
+            chain.Add(new Handler<char>('}', HandleParensLevelDown, true));
         }
 
         protected override void Record() {

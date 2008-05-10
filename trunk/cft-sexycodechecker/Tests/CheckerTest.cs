@@ -516,6 +516,11 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             IsHot();
         }
 
+        [Test]
+        public void Rule3Case02FOKArrayDefinitions() {
+            CallCheck(GetFileName("Rule3Case02FOKArrayDefinitions.cs"));
+            IsHot();
+        }
     }
 
     [TestFixture]
