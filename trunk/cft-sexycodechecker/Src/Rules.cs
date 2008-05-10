@@ -317,24 +317,6 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Execute(currentCharacter);
         }
 
-        private const string testUnicode = "\xEF\xBB\xBF\x2F\x2A";
-        
-        /// <summary>
-        /// We are going to test if this line should be granted an exception.
-        /// The line is corrupt by spurious parsed data that do not affect 
-        /// the other tests. This case hits only with a multiline comment starting
-        /// at the first character, under win2k and vista.
-        /// </summary>
-        /// <returns>true if the parser is on the first line and if the violation 
-        /// would be cause by a beginning "/*"</returns>
-        private bool IsLineUnicodeException() {
-            if (FileLenght > 1) {
-                return false;
-            }
-            
-            return LastCharacter == '/' && currentLine.Contains(testUnicode);
-        }
-
         protected override void Clear() {
             if (delayViolation != null) {
                 if (!IsInitializingTheBaseClass()) {
@@ -342,7 +324,7 @@ namespace Cluefultoys.Sexycodechecker {
                 }
                 delayViolation = null;
             }
-            if ((parensLevel > 0 || !tailChars.Contains(LastCharacter)) && !IsLineUnicodeException()) {
+            if ((parensLevel > 0 || !tailChars.Contains(LastCharacter))) {
                 delayViolation = OneLinePerStatement();
                 if (')' != LastCharacter) {
                     violations.Add(delayViolation);
@@ -355,6 +337,7 @@ namespace Cluefultoys.Sexycodechecker {
         private Violation OneLinePerStatement() {
             string message = "This statement does not end on the current line";
             return new Violation(ViolationType.OneLinePerStatement, message, FileLenght, currentLine);
+            
         }
 
         private bool IsInitializingTheBaseClass() {
@@ -375,7 +358,9 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Add(new Handler<char>(RecordLastCharacter, false));
             chain.Add(new Handler<char>(',', HandleCommas, true));
             chain.Add(new Handler<char>(';', HandleSemiColumns, true));
+            chain.Add(new Handler<char>('<', HandleParensLevelUp, true));
             chain.Add(new Handler<char>('(', HandleParensLevelUp, true));
+            chain.Add(new Handler<char>('>', HandleParensLevelDown, true));
             chain.Add(new Handler<char>(')', HandleParensLevelDown, true));
         }
 
@@ -466,7 +451,7 @@ namespace Cluefultoys.Sexycodechecker {
         private void HandleReentranceDown() {
             myReentrance--;
             if (inMethod && myReentrance < myMethodReentranceStart) {
-                if (myMethodLength >= 20) {
+                if (myMethodLength > 20) {
                     MethodTooLong();
                 }
                 inMethod = false;
@@ -551,8 +536,8 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         private void VariableTooShort() {
-            string message = "Identifier '{0}' is too short";
-            message = string.Format(CultureInfo.InvariantCulture, message, wordLenght);
+            string message = "Identifier '{0}' is too short: {1} characters";
+            message = string.Format(CultureInfo.InvariantCulture, message, currentWord, wordLenght);
             this.violations.Add(new Violation(ViolationType.VariableTooShort, message, FileLenght, currentLine));
         }
 
@@ -563,19 +548,9 @@ namespace Cluefultoys.Sexycodechecker {
         protected override void Record() {
             chain.Execute(currentCharacter);
         }
-
-        /// <summary>
-        /// We are going to exclude the first character from the check
-        /// The cause is the same of IsLineUnicodeException(), but in this
-        /// case we are allowed to just skip the first character (unlike above,
-        /// we are also outside the handling of a newline). 
-        /// </summary>
-        private bool skipFirstCharacter = true;
-        
+      
         protected override bool ValidCharacter() {
-            bool result = !skipFirstCharacter;
-            skipFirstCharacter = false;
-            return result;
+             return true;
         }
     }
 }

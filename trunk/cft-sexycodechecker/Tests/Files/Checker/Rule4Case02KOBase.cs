@@ -30,6 +30,7 @@ namespace Cluefultoys.Whatever {
             Console.Out.WriteLine("hurr!");
             Console.Out.WriteLine("hurr!");
             Console.Out.WriteLine("hurr!");
+            Console.Out.WriteLine("poop!");
         }
 
     }

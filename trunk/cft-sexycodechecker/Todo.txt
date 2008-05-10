@@ -1,4 +1,11 @@
 ﻿********************************************************************************
+[0] BUG FIXES ******************************************************************
+
+This line has more than one statement on line 61 :
+
+                    byte[] bytes1 = new byte[] { 0x20, 0x23, 0xE2 }; // this is correctly left alone
+                    byte[] bytes2 =  new byte[] { 0x98, 0xA3 }; // this goes bang
+
 [1] CHECKER AND RULES INTERACTION **********************************************
 
 Rules have a vertical hierarchy. Common variables are defined in the abstract 

@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 
 namespace Cluefultoys.Sexycodechecker {
 
@@ -29,7 +30,16 @@ namespace Cluefultoys.Sexycodechecker {
 
         private List<Rule> rules;
 
+        private Dictionary<uint, Encoding> decoders;
+
+        private Dictionary<Encoding, int> offsets;
+        
         public Checker() {
+            InitializeRuleset();
+            InitializeDictionaries();
+        }
+        
+        private void InitializeRuleset() {
             rules = new List<Rule>();
             rules.Add(new HeightRule());
             rules.Add(new WidthRule());
@@ -38,32 +48,99 @@ namespace Cluefultoys.Sexycodechecker {
             rules.Add(new MethodHeightRule());
             rules.Add(new VariableLenghtRule());
         }
+        
+        private void InitializeDictionaries() {
+            decoders = new Dictionary<uint, Encoding>();
+            decoders[BOMCount(Encoding.BigEndianUnicode.GetPreamble(), 2)] = Encoding.BigEndianUnicode;
+            decoders[BOMCount(Encoding.Unicode.GetPreamble(), 2)] =  Encoding.Unicode;
+            decoders[BOMCount(Encoding.UTF32.GetPreamble(), 4)] =  Encoding.UTF32;
+            decoders[BOMCount(Encoding.UTF7.GetPreamble(), 3)] =  Encoding.UTF7;
+            decoders[BOMCount(Encoding.UTF8.GetPreamble(), 3)] =  Encoding.UTF8;
 
-        // TODO: character recognition needs to change with unicode support.
-        // TODO: must become stream
+            offsets = new Dictionary<Encoding, int>();
+            offsets[Encoding.Default] = 4;
+            offsets[Encoding.ASCII] = 4;
+            offsets[Encoding.UTF8] = 1;
+            offsets[Encoding.UTF7] = 1;
+            offsets[Encoding.UTF32] = 0;
+            offsets[Encoding.Unicode] = 2;
+            offsets[Encoding.BigEndianUnicode] = 2;
+        }
+
         public Results CheckFile(string fileName) {
-            Results results = new Results(fileName);
+            Results results;
             try {
-                using (FileStream file = File.Open(fileName, FileMode.Open)) {
-                    while (file.Position < file.Length) {
-                        char currentCharacter = (char)file.ReadByte();
-                        foreach (Rule rule in rules) {
-                            rule.Check(currentCharacter);
-                        }
-                    }
-                    foreach (Rule rule in rules) {
-                        rule.ReportViolations(results);
-                    }
+                using (Stream file = File.Open(fileName, FileMode.Open)) {
+                    results = Check(file, fileName);
                 }
             } catch (FileNotFoundException exception) {
+                results = new Results(fileName);
                 Violation violation = new Violation(ViolationType.FileNotFound, exception.Message, Constants.NO_LINE, fileName);
-                results.Add(violation); 
+                results.Add(violation);
             }
             return results;
         }
 
-    }
+        public Results Check(Stream stream, string fileName) {
+            byte[] buffer = new byte[1024];
+            Encoding encoding = GetEncoding(buffer, stream);
+            Decoder decoder = encoding.GetDecoder();
+            return Check(stream, buffer, decoder, offsets[encoding], fileName);
+        }
+        
+        private Results Check(Stream stream, byte[] buffer, Decoder decoder, int theOffset, string fileName) {
+            Results results = new Results(fileName);
+            char[] charBuffer = new char[1024];
+            while (stream.Position < stream.Length) {
+                int bytesRead = stream.Read(buffer, theOffset, buffer.Length - theOffset);
+                int charDecoded = decoder.GetChars(buffer, 0, bytesRead + theOffset, charBuffer, 0);
 
+                for (int index = 0; index < charDecoded; index++) {
+                    char currentCharacter = charBuffer[index];
+                    foreach (Rule rule in rules) {
+                        rule.Check(currentCharacter);
+                    }
+                }
+                theOffset = 0;
+            }
+            foreach (Rule rule in rules) {
+                rule.ReportViolations(results);
+            }
+            return results;
+        }
+        
+        public Encoding GetEncoding(byte[] buffer, Stream stream) {
+            Encoding encoding = Encoding.Default;
+            if(stream.Length > 4) {
+                stream.Read(buffer, 0, 4);
+                for (int bytes = 4; bytes >= 2 && encoding == Encoding.Default; bytes--) {
+                    uint byteOrderModel = BOMCount(buffer, bytes);
+                    try {
+                        encoding = decoders[byteOrderModel];
+                    } catch (KeyNotFoundException) {
+                    }
+                }
+                if (encoding == null) {
+                    encoding = Encoding.Default;
+                } else {
+                    for (int index = 0; index < offsets[encoding]; index++) {
+                        buffer[index] = buffer[4 - offsets[encoding] + index];
+                    }
+                }
+            } 
+            return encoding;
+        }
+
+        private static uint BOMCount(byte[] input, int howMany) {
+            uint result = 0;
+            for(int index = 0; index < howMany && index < input.Length; index++) {
+                result = result * 256;
+                result += input[index];
+            }
+            return result;
+        }
+    }
+    
     public class Results {
 
         public Results(string fileName) {

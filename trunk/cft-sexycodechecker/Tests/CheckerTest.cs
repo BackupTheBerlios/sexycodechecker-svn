@@ -460,7 +460,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             Assert.AreEqual(1, results.Violations.Count);
             Assert.AreEqual(ViolationType.OneStatementPerLine, results.Violations[0].KindOfViolation);
         }
-
+        
         [Test]
         public void Rule3Case01Bug200804011() {
             // TODO the self referential bug, straroftl. Regression agains 20080409+20080410
@@ -508,6 +508,12 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             IsNot();
             Assert.AreEqual(1, results.Violations.Count);
             Assert.AreEqual(ViolationType.OneLinePerStatement, results.Violations[0].KindOfViolation);
+        }
+
+        [Test]
+        public void Rule3Case02EOKGenericDefinition() {
+            CallCheck(GetFileName("Rule3Case02EOKGenericDefinition.cs"));
+            IsHot();
         }
 
     }
