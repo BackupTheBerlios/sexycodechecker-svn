@@ -6,6 +6,8 @@ Will contain the solution files for various environments
 projectname\projectname\
 Also called the source root. Will contain the Program.cs file with the
 main method.
+[Sharpdevelop 2.0] This will be a default if you create a project 
+checking "Auto create project subdir" and "Create directory for sources"
 
 projectname\projectname\Src
 The Live Application Source code must go here

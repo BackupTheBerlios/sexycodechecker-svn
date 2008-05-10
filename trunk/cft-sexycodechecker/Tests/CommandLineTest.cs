@@ -8,11 +8,12 @@
 using NUnit.Framework;
 using Cluefultoys.Xml;
 using Cluefultoys.Nunit;
+using Cluefultoys.Sexycodechecker.Tests;
 
 namespace Cluefultoys.CommandLine.Tests {
 
     [TestFixture]
-    public class TestCommandLine : BaseTest {
+    public class TestCommandLine : TestParent {
 
         private const string myFilesPath = "Tests/Files/Configuration/";
 

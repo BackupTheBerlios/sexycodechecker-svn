@@ -12,11 +12,14 @@ using System.Xml;
 using NUnit.Framework;
 using Cluefultoys.Xml;
 using Cluefultoys.Nunit;
+using Cluefultoys.Sexycodechecker.Tests;
 
 namespace Cluefultoys.Xml.Tests {
 
     [TestFixture]
-    public class LoadingTest : BaseTest {
+    public class LoadingTest : TestParent {
+
+        private const string ParametersResource = "Cluefultoys.Tests.Resources.Parameters.xml";
 
         private const string myFilesPath = "Tests/Files/Configuration/";
 

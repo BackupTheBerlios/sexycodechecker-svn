@@ -2,17 +2,29 @@
  * Sexy Code Checker: An Implementation of the 700x128 Manifesto
  * By Davide Inglima, 2008.
  * 
- * This source code is released under the MIT License 
+ * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
 using NUnit.Framework;
+using Cluefultoys.Xml;
 using Cluefultoys.Nunit;
 using Cluefultoys.Sexycodechecker;
 
 namespace Cluefultoys.Sexycodechecker.Tests {
 
+    // TODO make it easy for clients to embed SCC as Unit Tests
     public abstract class TestParent : BaseTest {
 
+        private const string ParametersResource = "Cluefultoys.Tests.Resources.Parameters.xml";
+
+        private string mySourceRootPath;
+        
+        protected override string SourceRootPath {
+            get {
+                return mySourceRootPath;
+            }
+        }
+        
         private const string myFilesPath = "Tests/Files/Checker/";
 
         protected override string TestFilesPath {
@@ -26,6 +38,10 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         protected Results results;
 
         protected string filename;
+
+        protected TestParent() {
+            mySourceRootPath = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, SourceRoot);
+        }
 
         [SetUp]
         protected void SetUp() {
@@ -471,7 +487,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             CallCheck(GetFileName("Rule3Case02Bug200804006.cs"));
             IsHot();
         }
-       
+        
         [Test]
         public void Rule3Case02BKOOneMethodDeclarationInTwoRows() {
             CallCheck(GetFileName("Rule3Case02BKOOneMethodDeclarationInTwoRows.cs"));
