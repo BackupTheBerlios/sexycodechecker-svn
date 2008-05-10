@@ -58,7 +58,7 @@ namespace Cluefultoys.Xml.Tests {
 
         [Test]
         public void GetConfiguration() {
-            string result = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, "Ping");
+            string result = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, "Ping", typeof(LoadingTest));
 
             Assert.AreEqual("ping", result);
         }

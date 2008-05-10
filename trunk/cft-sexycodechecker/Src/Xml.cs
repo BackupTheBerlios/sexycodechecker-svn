@@ -5,6 +5,7 @@
  * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
+using System;
 using System.IO;
 using System.Reflection;
 using System.Xml;
@@ -18,8 +19,8 @@ namespace Cluefultoys.Xml {
         private CftConfiguration() {
         }
         
-        public static string GetConfigurationString(string resourceName, string xmlNamespace, string element) {
-            Assembly assembly = Assembly.GetExecutingAssembly();
+        public static string GetConfigurationString(string resourceName, string xmlNamespace, string element, Type caller) {
+            Assembly assembly = Assembly.GetAssembly(caller);
             using (Stream stream = assembly.GetManifestResourceStream(resourceName)) {
                 return Utilities.GetString(stream, xmlNamespace, element);
             }

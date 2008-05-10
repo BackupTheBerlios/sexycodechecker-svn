@@ -40,7 +40,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         protected string filename;
 
         protected TestParent() {
-            mySourceRootPath = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, SourceRoot);
+            mySourceRootPath = CftConfiguration.GetConfigurationString(ParametersResource, ParametersNamespace, SourceRoot, typeof(TestParent));
         }
 
         [SetUp]
