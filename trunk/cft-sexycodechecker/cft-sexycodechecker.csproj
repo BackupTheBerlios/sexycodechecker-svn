@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="2.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -43,6 +43,7 @@
     <Compile Include="Src\Handler.cs" />
     <Compile Include="Src\Nunit.cs" />
     <Compile Include="Src\Rules.cs" />
+    <Compile Include="Src\Streams.cs" />
     <Compile Include="Src\Xml.cs" />
     <Compile Include="Tests\CheckerTest.cs" />
     <Compile Include="Tests\CommandLineTest.cs" />

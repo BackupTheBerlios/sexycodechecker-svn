@@ -5,11 +5,10 @@
  * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
 
+using Cluefultoys.Streams;
 namespace Cluefultoys.Sexycodechecker {
 
     // TODO: name
@@ -28,18 +27,14 @@ namespace Cluefultoys.Sexycodechecker {
     /// </summary>
     public class Checker {
 
-        private EncodingSelector selector;
-        
-        private ContextHandler contextHandler;
+        private Context context;
 
         public Checker() {
             InitializeRuleset();
         }
         
         private void InitializeRuleset() {
-            contextHandler = new ContextHandler();
-            
-            selector = new EncodingSelector();
+            context = new Context();
         }
         
         public Results CheckFile(string fileName) {
@@ -58,134 +53,22 @@ namespace Cluefultoys.Sexycodechecker {
 
         public Results Check(Stream stream, string fileName) {
             byte[] buffer = new byte[1024];
-            stream.Read(buffer, 0, 4);
-            Encoding encoding = selector.GetEncoding(buffer);
-            
-            return Check(stream, buffer, encoding, fileName);
-        }
-        
-        private Results Check(Stream stream, byte[] buffer, Encoding encoding, string fileName) {
-            int theOffset = selector.ByteCount(encoding);
-            Decoder decoder = encoding.GetDecoder();
             char[] charBuffer = new char[1024];
+
+            Reader reader = new Reader(AnalyzeCharacters);
+
             while (stream.Position < stream.Length) {
-                int bytesRead = stream.Read(buffer, theOffset, buffer.Length - theOffset);
-                int charDecoded = decoder.GetChars(buffer, 0, bytesRead + theOffset, charBuffer, 0);
-                AnalyzeCharacters(charBuffer, charDecoded);
-                theOffset = 0;
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                reader.DoRead(buffer, bytesRead, charBuffer);
             }
 
-            return contextHandler.CloseStream(fileName);
+            return context.DoClose(fileName);
         }
         
         private void AnalyzeCharacters(char[] charBuffer, int charDecoded) {
             for (int index = 0; index < charDecoded; index++) {
-                char currentCharacter = charBuffer[index];
-                contextHandler.AnalyzeCharacter(currentCharacter);
+                context.AnalyzeCharacter(charBuffer[index]);
             }
-        }
-    }
-    
-    public class ContextHandler {
-        
-        private Context context = new Context();
-        
-        private List<IRule> rules;
-
-        public ContextHandler() {
-            rules = new List<IRule>();
-
-            rules.Add(new HeightRule());
-            rules.Add(new WidthRule());
-            rules.Add(new OneStatementPerLineRule());
-            rules.Add(new OneLinePerStatementRule());
-            rules.Add(new MethodHeightRule());
-            rules.Add(new VariableLenghtRule());
-            
-        }
-        
-        public void AnalyzeCharacter(char character) {
-            context.DoSetup(character);
-            foreach (IRule rule in rules) {
-                rule.Check(character, context);
-            }
-            context.DoTeardown(character);
-        }
-        
-        public Results CloseStream(string fileName) {
-            Results results = new Results(fileName);
-
-            foreach (IRule rule in rules) {
-                rule.Close(context);
-            }
-            
-            context.ReportViolations(results);
-            return results;
-        }
-        
-    }
-    
-    public class EncodingSelector {
-        
-        private Dictionary<uint, Encoding> decoders;
-
-        private Dictionary<Encoding, int> offsets;
-        
-        public EncodingSelector() {
-            InitializeDictionaries();
-        }
-        
-        private void InitializeDictionaries() {
-            decoders = new Dictionary<uint, Encoding>();
-            decoders[BOMCount(Encoding.BigEndianUnicode.GetPreamble(), 2)] = Encoding.BigEndianUnicode;
-            decoders[BOMCount(Encoding.Unicode.GetPreamble(), 2)] =  Encoding.Unicode;
-            decoders[BOMCount(Encoding.UTF32.GetPreamble(), 4)] =  Encoding.UTF32;
-            decoders[BOMCount(Encoding.UTF7.GetPreamble(), 3)] =  Encoding.UTF7;
-            decoders[BOMCount(Encoding.UTF8.GetPreamble(), 3)] =  Encoding.UTF8;
-
-            offsets = new Dictionary<Encoding, int>();
-            offsets[Encoding.Default] = 4;
-            offsets[Encoding.ASCII] = 4;
-            offsets[Encoding.UTF8] = 1;
-            offsets[Encoding.UTF7] = 1;
-            offsets[Encoding.UTF32] = 0;
-            offsets[Encoding.Unicode] = 2;
-            offsets[Encoding.BigEndianUnicode] = 2;
-        }
-
-        public Encoding GetEncoding(byte[] buffer) {
-            Encoding encoding = Encoding.Default;
-
-            for (int bytes = 4; bytes >= 2 && encoding == Encoding.Default; bytes--) {
-                uint byteOrderModel = BOMCount(buffer, bytes);
-                try {
-                    encoding = decoders[byteOrderModel];
-                } catch (KeyNotFoundException) {
-                }
-            }
-
-            CorrectArray(buffer, encoding);
-            return encoding;
-        }
-        
-        private void CorrectArray(byte[] buffer, Encoding encoding) {
-            int count = ByteCount(encoding);
-            for (int index = 0; index < count; index++) {
-                buffer[index] = buffer[4 - count + index];
-            }
-        }
-        
-        public int ByteCount (Encoding encoding) {
-            return offsets[encoding];
-        }
-        
-        private static uint BOMCount(byte[] input, int howMany) {
-            uint result = 0;
-            for(int index = 0; index < howMany && index < input.Length; index++) {
-                result = result * 256;
-                result += input[index];
-            }
-            return result;
         }
     }
     

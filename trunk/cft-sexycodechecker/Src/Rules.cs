@@ -9,9 +9,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
+using Cluefultoys.Handlers;
 namespace Cluefultoys.Sexycodechecker {
 
     public class Context {
+        
+        // From ContextHandler
+        private List<IRule> rules;
 
         private Collection<Violation> violations = new Collection<Violation>();
         
@@ -19,7 +23,7 @@ namespace Cluefultoys.Sexycodechecker {
             violations.Add(violation);
         }
         
-        public virtual void ReportViolations(Results toResults) {
+        public void ReportViolations(Results toResults) {
             foreach (Violation violation in violations) {
                 toResults.Add(violation);
             }
@@ -126,6 +130,15 @@ namespace Cluefultoys.Sexycodechecker {
         private Chain<char> teardownChain;
 
         public Context() {
+            rules = new List<IRule>();
+
+            rules.Add(new HeightRule());
+            rules.Add(new WidthRule());
+            rules.Add(new OneStatementPerLineRule());
+            rules.Add(new OneLinePerStatementRule());
+            rules.Add(new MethodHeightRule());
+            rules.Add(new VariableLenghtRule());
+
             setupChain = new Chain<char>();
             setupChain.Add(new Handler<char>('\'', HandleCharDefinition, true));
             setupChain.Add(new Handler<char>('"', HandleStringDefinition, true));
@@ -137,6 +150,7 @@ namespace Cluefultoys.Sexycodechecker {
             teardownChain.Add(new Handler<char>(Constants.ASCII_LF, HandleNewLine, true));
         }
 
+        // TODO public must go away
         public void DoSetup(char character) {
             myCurrentLine += character;
             if (!char.IsWhiteSpace(character)) {
@@ -146,7 +160,7 @@ namespace Cluefultoys.Sexycodechecker {
             setupChain.Execute(character);
         }
         
-        
+        // TODO public must go away
         public void DoTeardown(char character) {
             teardownChain.Execute(character);
             myPreviousCharacter = character;
@@ -154,7 +168,28 @@ namespace Cluefultoys.Sexycodechecker {
             myBlock = false;
 
         }
+
+        // From ContextHandler
+        public void AnalyzeCharacter(char character) {
+            DoSetup(character);
+            foreach (IRule rule in rules) {
+                rule.Check(character, this);
+            }
+            DoTeardown(character);
+        }
         
+        // From ContextHandler
+        public Results DoClose(string fileName) {
+            Results results = new Results(fileName);
+
+            foreach (IRule rule in rules) {
+                rule.Close(this);
+            }
+            
+            ReportViolations(results);
+            return results;
+        }
+
         private void HandleCharDefinition(char target) {
             if (!myIsEscaped && !myInStringDefinition) {
                 myInCharDefinition = !myInCharDefinition;

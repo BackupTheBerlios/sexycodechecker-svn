@@ -6,7 +6,6 @@
  * See Copying.txt for the full details.
  */
 using System.IO;
-using Cluefultoys.Xml;
 
 namespace Cluefultoys.Nunit {
 

@@ -15,6 +15,10 @@ namespace Cluefultoys.Sexycodechecker {
                 Console.Out.WriteLine("param " + iParam + ": " + argument);
                 iParam++;
             }
+            
+            
+            Checker checker = new Checker();
+            checker.CheckFile("C:/Program.cs");
         }
     }
 }

@@ -30,14 +30,20 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         }
 
         [Test]
-        public void Xml() {
-            CallCheck(GetFileName("Xml.cs"));
+        public void Handler() {
+            CallCheck(GetFileName("Handler.cs"));
             IsHot();
         }
 
         [Test]
-        public void Handler() {
-            CallCheck(GetFileName("Handler.cs"));
+        public void Nunit() {
+            CallCheck(GetFileName("Nunit.cs"));
+            IsHot();
+        }
+
+        [Test]
+        public void Streams() {
+            CallCheck(GetFileName("Streams.cs"));
             IsHot();
         }
 
@@ -48,10 +54,11 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         }
 
         [Test]
-        public void Nunit() {
-            CallCheck(GetFileName("Nunit.cs"));
+        public void Xml() {
+            CallCheck(GetFileName("Xml.cs"));
             IsHot();
         }
+
 
         
     }

@@ -38,6 +38,7 @@
     <Compile Include="Src\Handler.cs" />
     <Compile Include="Src\Nunit.cs" />
     <Compile Include="Src\Rules.cs" />
+    <Compile Include="Src\Streams.cs" />
     <Compile Include="Src\Xml.cs" />
     <Compile Include="Tests\CheckerTest.cs" />
     <Compile Include="Tests\CommandLineTest.cs" />

@@ -8,7 +8,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Cluefultoys.Sexycodechecker {
+namespace Cluefultoys.Handlers {
 
     public delegate void Executor<T>(T target);
 
