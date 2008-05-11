@@ -11,6 +11,22 @@ using System.Globalization;
 
 namespace Cluefultoys.Sexycodechecker {
 
+    public class Context {
+
+        private Collection<Violation> violations = new Collection<Violation>();
+        
+        public void AddViolation(Violation violation) {
+            violations.Add(violation);
+        }
+        
+        public virtual void ReportViolations(Results toResults) {
+            foreach (Violation violation in violations) {
+                toResults.Add(violation);
+            }
+        }
+        
+    }
+    
     public abstract class Rule {
 
         protected Rule() {
@@ -24,6 +40,8 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         private Chain<char> chain;
+        
+        protected Context context;
 
         protected bool totallyEmptyLine = true;
 
@@ -45,8 +63,6 @@ namespace Cluefultoys.Sexycodechecker {
 
         protected bool iAmInMultilineComment;
 
-        protected Collection<Violation> violations = new Collection<Violation>();
-
         protected string currentLine = "";
 
         protected bool inCharDefinition;
@@ -55,19 +71,16 @@ namespace Cluefultoys.Sexycodechecker {
 
         protected abstract void Record();
 
-        protected abstract void DoNewLine();
+        protected abstract void DoNewLine(Context context);
 
         protected abstract bool ValidCharacter();
 
-        public virtual void ReportViolations(Results toResults) {
-            DoNewLine();
-            foreach (Violation violation in violations) {
-                toResults.Add(violation);
-            }
+        public virtual void Close(Context context) {
+            DoNewLine(context);
         }
 
         private void HandleNewline() {
-            DoNewLine();
+            DoNewLine(context);
             iAmInComment = iAmInMultilineComment;
             totallyEmptyLine = true;
             currentLine = "";
@@ -101,7 +114,8 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        public void Check(char currentCharacter) {
+        public void Check(char currentCharacter, Context context) {
+            this.context = context;
             this.currentCharacter = currentCharacter;
             this.currentLine += currentCharacter;
             if (!char.IsWhiteSpace(currentCharacter)) {
@@ -152,7 +166,7 @@ namespace Cluefultoys.Sexycodechecker {
             return !iAmInComment && !char.IsWhiteSpace(currentCharacter);
         }
 
-        protected override void DoNewLine() {
+        protected override void DoNewLine(Context context) {
             bool countIt = totallyEmptyLine || iHaveCode;
             if (countIt) {
                 myCodeLenght++;
@@ -160,9 +174,9 @@ namespace Cluefultoys.Sexycodechecker {
             iHaveCode = false;
         }
 
-        public override void ReportViolations(Results toResults) {
+        public override void Close(Context context) {
             if (Constants.ALLOWABLE_LINES_PER_FILE < myCodeLenght) {
-                toResults.Add(CompilationUnitTooLong());
+                context.AddViolation(CompilationUnitTooLong());
             }
         }
 
@@ -224,19 +238,19 @@ namespace Cluefultoys.Sexycodechecker {
             chain.Execute(currentCharacter);
         }
 
-        protected override void DoNewLine() {
+        protected override void DoNewLine(Context context) {
             if (maxCharacters < charactersInLine) {
-                LineTooWide();
+                LineTooWide(context);
             }
             charactersInLine = 0;
             lineStart = true;
         }
         
-        private void LineTooWide() {
+        private void LineTooWide(Context context) {
             string viewLine = currentLine.Replace(' ', '.');
             string message = "This line is too wide: {0} instead of {1}";
             message = string.Format(CultureInfo.InvariantCulture, message, charactersInLine, maxCharacters);
-            violations.Add(new Violation(ViolationType.LineTooWide, message, FileLenght, viewLine));
+            context.AddViolation(new Violation(ViolationType.LineTooWide, message, FileLenght, viewLine));
         }
 
     }
@@ -263,7 +277,7 @@ namespace Cluefultoys.Sexycodechecker {
             return inCharDefinition || inStringDefinition;
         }
 
-        protected override void DoNewLine() {
+        protected override void DoNewLine(Context context) {
             Clear();
             myLastCharacter = Constants.ASCII_CR;
             parensLevel = 0;
@@ -320,14 +334,14 @@ namespace Cluefultoys.Sexycodechecker {
         protected override void Clear() {
             if (delayViolation != null) {
                 if (!IsInitializingTheBaseClass()) {
-                    violations.Add(delayViolation);
+                    context.AddViolation(delayViolation);
                 }
                 delayViolation = null;
             }
             if ((parensLevel > 0 || !tailChars.Contains(LastCharacter))) {
                 delayViolation = OneLinePerStatement();
                 if (')' != LastCharacter) {
-                    violations.Add(delayViolation);
+                    context.AddViolation(delayViolation);
                     delayViolation = null;
                 }
             }
@@ -385,7 +399,7 @@ namespace Cluefultoys.Sexycodechecker {
         protected override void Clear() {
             int resultCommas = commas - (LastCharacter == ',' ? 1 : 0);
             if (resultCommas > 0 || semiColumns > 1) {
-                violations.Add(OneStatementPerLine());
+                context.AddViolation(OneStatementPerLine());
             }
             semiColumns = 0;
             commas = 0;
@@ -483,7 +497,7 @@ namespace Cluefultoys.Sexycodechecker {
         private void MethodTooLong() {
             string message = "Method is {0} lines long";
             message = string.Format(CultureInfo.InvariantCulture, message, myMethodLength);
-            this.violations.Add(new Violation(ViolationType.MethodTooLong, message, FileLenght, originalMethodLine));
+            context.AddViolation(new Violation(ViolationType.MethodTooLong, message, FileLenght, originalMethodLine));
         }
 
         protected override void Record() {
@@ -540,7 +554,7 @@ namespace Cluefultoys.Sexycodechecker {
         private void VariableTooShort() {
             string message = "Identifier '{0}' is too short: {1} characters";
             message = string.Format(CultureInfo.InvariantCulture, message, currentWord, wordLenght);
-            this.violations.Add(new Violation(ViolationType.VariableTooShort, message, FileLenght, currentLine));
+            context.AddViolation(new Violation(ViolationType.VariableTooShort, message, FileLenght, currentLine));
         }
 
         protected override void Clear() {

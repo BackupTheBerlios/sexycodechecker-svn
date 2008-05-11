@@ -117,15 +117,19 @@ namespace Cluefultoys.Sexycodechecker.Tests {
     [TestFixture]
     public class TestHeightRule {
 
+        private Context context;
+        
         private TestCheckerMockLine lineChecker;
 
         [SetUp]
         protected void SetUp() {
+            context = new Context();
             lineChecker = new TestCheckerMockLine();
         }
 
         [TearDown]
         protected void TearDown() {
+            context = null;
             lineChecker = null;
         }
 
@@ -133,7 +137,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         public void Counting2Lines() {
             string twoLines = "/*\n*/";
             foreach (char c in twoLines.ToCharArray()) {
-                lineChecker.Check(c);
+                lineChecker.Check(c, context);
             }
             Assert.AreEqual(0, lineChecker.CodeLenght, "there shouldn't be lines, but there are {0}", lineChecker.CodeLenght);
         }
@@ -142,7 +146,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         public void Rule1Bug200804004() {
             string oneLine = "/*\n";
             foreach (char c in oneLine.ToCharArray()) {
-                lineChecker.Check(c);
+                lineChecker.Check(c, context);
             }
             Assert.AreEqual(0, lineChecker.CodeLenght, "there shouldn't be lines, but there are {0}", lineChecker.CodeLenght);
         }
@@ -151,21 +155,21 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         public void Rule1Bug200804007() {
             string oneLine = "\n";
             foreach (char c in oneLine.ToCharArray()) {
-                lineChecker.Check(c);
+                lineChecker.Check(c, context);
             }
             Assert.AreEqual(1, lineChecker.CodeLenght, "there should be 1 line, but there are {0}", lineChecker.CodeLenght);
         }
 
         [Test]
         public void Counting2LinesDetailed() {
-            lineChecker.Check('/');
-            lineChecker.Check('*');
-            lineChecker.Check('\n');
+            lineChecker.Check('/', context);
+            lineChecker.Check('*', context);
+            lineChecker.Check('\n', context);
             Assert.AreEqual(true, lineChecker.IsInMultilineComment);
             Assert.AreEqual(false, lineChecker.HasCode);
-            lineChecker.Check('*');
-            lineChecker.Check('/');
-            lineChecker.Check('\n');
+            lineChecker.Check('*', context);
+            lineChecker.Check('/', context);
+            lineChecker.Check('\n', context);
             Assert.AreEqual(false, lineChecker.IsInMultilineComment);
             Assert.AreEqual(false, lineChecker.HasCode);
         }
@@ -243,39 +247,44 @@ namespace Cluefultoys.Sexycodechecker.Tests {
 
         private Results results;
 
+        private Context context;
+        
         [SetUp]
         protected void SetUp() {
             ruleChecker = new WidthRule();
             results = new Results(TEST_FILENAME);
+            context = new Context();
         }
 
         [TearDown]
         protected void TearDown() {
             ruleChecker = null;
             results = null;
+            context = null;
         }
 
         private void PunchLine() {
             for (int index = 0; index < 128; index++) {
-                ruleChecker.Check(TEST_CHARACTER);
+                ruleChecker.Check(TEST_CHARACTER, context);
             }
         }
 
         private void PunchCharacter() {
-            ruleChecker.Check(TEST_CHARACTER);
+            ruleChecker.Check(TEST_CHARACTER, context);
         }
 
         private void PunchCharacter(char c) {
-            ruleChecker.Check(c);
+            ruleChecker.Check(c, context);
         }
 
         private void PunchReturn() {
-            ruleChecker.Check('\r');
-            ruleChecker.Check('\n');
+            ruleChecker.Check('\r', context);
+            ruleChecker.Check('\n', context);
         }
 
         private void CollectResults() {
-            ruleChecker.ReportViolations(results);
+            ruleChecker.Close(context);
+            context.ReportViolations(results);
         }
 
         private const string noBut = "";
