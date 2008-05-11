@@ -100,19 +100,14 @@ namespace Cluefultoys.Sexycodechecker.Tests {
 
     internal class TestCheckerMockLine : HeightRule {
 
-        private IRule setup = new ContextSetup();
-        private IRule teardown = new ContextTeardown();
-                
         public override void Close(Context context) {
-            setup.Close(context);
             base.Close(context);
-            teardown.Close(context);
         }
         
         public override void Check(char currentCharacter, Context context) {
-            setup.Check(currentCharacter, context);
+            context.DoSetup(currentCharacter);
             base.Check(currentCharacter, context);
-            teardown.Check(currentCharacter, context);
+            context.DoTeardown(currentCharacter);
         }
         
     }

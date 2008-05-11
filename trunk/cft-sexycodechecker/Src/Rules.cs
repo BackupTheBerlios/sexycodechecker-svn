@@ -30,18 +30,12 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myPreviousCharacter;
             }
-            set {
-                myPreviousCharacter = value;
-            }
         }
 
         private bool myInCharDefinition;
         public bool InCharDefinition {
             get {
                 return myInCharDefinition;
-            }
-            set {
-                myInCharDefinition = value;
             }
         }
 
@@ -50,9 +44,6 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myInStringDefinition;
             }
-            set {
-                myInStringDefinition = value;
-            }
         }
 
         private bool myInDirectiveDefinition;
@@ -60,18 +51,12 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myInDirectiveDefinition;
             }
-            set {
-                myInDirectiveDefinition = value;
-            }
         }
         
         private bool myIsEscaped;
         public bool IsEscaped {
             get {
                 return myIsEscaped;
-            }
-            set {
-                myIsEscaped = value;
             }
         }
 
@@ -84,18 +69,12 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myFileLenght;
             }
-            set {
-                myFileLenght = value;
-            }
         }
 
         private bool myIAmInComment;
         public bool IAmInComment {
             get {
                 return myIAmInComment;
-            }
-            set {
-                myIAmInComment = value;
             }
         }
 
@@ -104,18 +83,12 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myIAmInMultilineComment;
             }
-            set {
-                myIAmInMultilineComment = value;
-            }
         }
 
         private string myCurrentLine = "";
         public string CurrentLine {
             get {
                 return myCurrentLine;
-            }
-            set {
-                myCurrentLine = value;
             }
         }
 
@@ -124,18 +97,12 @@ namespace Cluefultoys.Sexycodechecker {
             get {
                 return myTotallyEmptyLine;
             }
-            set {
-                myTotallyEmptyLine = value;
-            }
         }
 
         private bool myBlock;
         public bool Block {
             get {
                 return myBlock;
-            }
-            set {
-                myBlock = value;
             }
         }
 
@@ -145,7 +112,6 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         private char myLastCharacter = Constants.ASCII_CR;
-
         public char LastCharacter {
             get {
                 return myLastCharacter;
@@ -153,6 +119,89 @@ namespace Cluefultoys.Sexycodechecker {
             set {
                 myLastCharacter = value;
             }
+        }
+
+        private Chain<char> setupChain;
+
+        private Chain<char> teardownChain;
+
+        public Context() {
+            setupChain = new Chain<char>();
+            setupChain.Add(new Handler<char>('\'', HandleCharDefinition, true));
+            setupChain.Add(new Handler<char>('"', HandleStringDefinition, true));
+            setupChain.Add(new Handler<char>('#', HandleDirectiveDefinition, true));
+            setupChain.Add(new Handler<char>('/', HandleSlash, true));
+            setupChain.Add(new Handler<char>('*', HandleStar, true));
+            
+            teardownChain = new Chain<char>();
+            teardownChain.Add(new Handler<char>(Constants.ASCII_LF, HandleNewLine, true));
+        }
+
+        public void DoSetup(char character) {
+            myCurrentLine += character;
+            if (!char.IsWhiteSpace(character)) {
+                myTotallyEmptyLine = false;
+            }
+            
+            setupChain.Execute(character);
+        }
+        
+        
+        public void DoTeardown(char character) {
+            teardownChain.Execute(character);
+            myPreviousCharacter = character;
+            myIsEscaped = !myIsEscaped && (myPreviousCharacter == '\\');
+            myBlock = false;
+
+        }
+        
+        private void HandleCharDefinition(char target) {
+            if (!myIsEscaped && !myInStringDefinition) {
+                myInCharDefinition = !myInCharDefinition;
+            }
+        }
+
+        private void HandleStringDefinition(char target) {
+            if (!myInCharDefinition) {
+                myInStringDefinition = !myInStringDefinition;
+            }
+        }
+        
+        private void HandleDirectiveDefinition(char target) {
+            if (!myInCharDefinition && !myInStringDefinition) {
+                myInDirectiveDefinition = true;
+            }
+        }
+        
+        private void HandleSlash(char target) {
+            if ('/' == myPreviousCharacter && !HandlingString()) {
+                myIAmInComment = true;
+
+            } else if ('*' == myPreviousCharacter && !HandlingString()) {
+                myIAmInMultilineComment = false;
+                myIAmInComment = false;
+            }
+            myBlock = true;
+        }
+
+        private void HandleStar(char target) {
+            if ('/' == myPreviousCharacter && !HandlingString()) {
+                myIAmInMultilineComment = true;
+            }
+            myBlock = true;
+        }
+        
+        private void HandleNewLine(char target) {
+            myIAmInComment = myIAmInMultilineComment;
+            myTotallyEmptyLine = true;
+            myCurrentLine = "";
+            myFileLenght++;
+
+            myInCharDefinition = false;
+            myInStringDefinition = false;
+            myInDirectiveDefinition = false;
+
+            myLastCharacter = Constants.ASCII_CR;
         }
         
     }
@@ -164,109 +213,7 @@ namespace Cluefultoys.Sexycodechecker {
         void Check(char currentCharacter, Context context);
         
     }
-    
-    public class ContextSetup : IRule {
-
-        private Chain<char> chain;
-        
-        private Context context;
-        
-        public ContextSetup() {
-            chain = new Chain<char>();
-            chain.Add(new Handler<char>('\'', HandleCharDefinition, true));
-            chain.Add(new Handler<char>('"', HandleStringDefinition, true));
-            chain.Add(new Handler<char>('#', HandleDirectiveDefinition, true));
-            chain.Add(new Handler<char>('/', HandleSlash, true));
-            chain.Add(new Handler<char>('*', HandleStar, true));
-        }
-        
-        public void Close(Context context) {
-        }
-
-        public void Check(char currentCharacter, Context context) {
-            this.context = context;
-            context.CurrentLine += currentCharacter;
-            if (!char.IsWhiteSpace(currentCharacter)) {
-                context.TotallyEmptyLine = false;
-            }
-            
-            chain.Execute(currentCharacter);
-        }
-        
-        private void HandleCharDefinition() {
-            if (!context.IsEscaped && !context.InStringDefinition) {
-                context.InCharDefinition = !context.InCharDefinition;
-            }
-        }
-
-        private void HandleStringDefinition() {
-            if (!context.InCharDefinition) {
-                context.InStringDefinition = !context.InStringDefinition;
-            }
-        }
-        
-        private void HandleDirectiveDefinition() {
-            if (!context.InCharDefinition && !context.InStringDefinition) {
-                context.InDirectiveDefinition = true;
-            }
-        }
-        
-        private void HandleSlash() {
-            if ('/' == context.PreviousCharacter && !context.HandlingString()) {
-                context.IAmInComment = true;
-
-            } else if ('*' == context.PreviousCharacter && !context.HandlingString()) {
-                context.IAmInMultilineComment = false;
-                context.IAmInComment = false;
-            }
-            context.Block = true;
-        }
-
-        private void HandleStar() {
-            if ('/' == context.PreviousCharacter && !context.HandlingString()) {
-                context.IAmInMultilineComment = true;
-            }
-            context.Block = true;
-        }
-        
-    }
-    
-    public class ContextTeardown : IRule {
-        
-        private Chain<char> chain;
-        
-        private Context context;
-        
-        public ContextTeardown() {
-            chain = new Chain<char>();
-            chain.Add(new Handler<char>(Constants.ASCII_LF, HandleNewLine, true));
-        }
-        
-        public void Check(char currentCharacter, Context context) {
-            this.context = context;
-            chain.Execute(currentCharacter);
-            context.PreviousCharacter = currentCharacter;
-            context.IsEscaped = !context.IsEscaped && (context.PreviousCharacter == '\\');
-            context.Block = false;
-        }
-
-        private void HandleNewLine() {
-            context.IAmInComment = context.IAmInMultilineComment;
-            context.TotallyEmptyLine = true;
-            context.CurrentLine = "";
-            context.FileLenght++;
-
-            context.InCharDefinition = false;
-            context.InStringDefinition = false;
-            context.InDirectiveDefinition = false;
-
-            context.LastCharacter = Constants.ASCII_CR;
-        }
        
-        public void Close(Context context) {
-        }
-    }
-    
     public abstract class AbstractRule : IRule {
 
         protected AbstractRule() {
@@ -292,35 +239,27 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        private char myCurrentCharacter;
-        protected char CurrentCharacter {
-            get {
-                return myCurrentCharacter;
-            }
-        }
-
         protected abstract void DoNewLine(Context context);
 
-        protected virtual bool ValidCharacter() {
-            return !char.IsWhiteSpace(myCurrentCharacter);
+        protected virtual bool ValidCharacter(char target) {
+            return !char.IsWhiteSpace(target);
         }
 
         public virtual void Close(Context context) {
             DoNewLine(context);
         }
 
-        private void HandleNewline() {
+        private void HandleNewline(char target) {
             DoNewLine(myContext);
             myParensLevel = 0;
         }
         
         private bool StopIfBozo(char character) {
-            return myContext.Block || myContext.IAmInMultilineComment || myContext.IAmInComment || !ValidCharacter();
+            return myContext.Block || myContext.IAmInMultilineComment || myContext.IAmInComment || !ValidCharacter(character);
         }
 
         public virtual void Check(char currentCharacter, Context context) {
             this.myContext = context;
-            this.myCurrentCharacter = currentCharacter;
             myChain.Execute(currentCharacter);
         }
 
@@ -335,16 +274,17 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        protected  void HandleParensLevelDown() {
+        protected  void HandleParensLevelDown(char target) {
             myParensLevel--;
         }
 
-        protected void HandleParensLevelUp() {
+        protected void HandleParensLevelUp(char target) {
             myParensLevel++;
         }
 
-        protected void RecordLastCharacter() {
-            Context.LastCharacter = CurrentCharacter;
+        // TODO this puts too much care on side-effects
+        protected void RecordLastCharacter(char target) {
+            Context.LastCharacter = target;
         }
         
     }
@@ -372,12 +312,12 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        protected void Record() {
+        protected void Record(char target) {
             iHaveCode = true;
         }
 
-        protected override bool ValidCharacter() {
-            return !Context.IAmInComment && !char.IsWhiteSpace(CurrentCharacter);
+        protected override bool ValidCharacter(char target) {
+            return !Context.IAmInComment && !char.IsWhiteSpace(target);
         }
 
         protected override void DoNewLine(Context context) {
@@ -418,31 +358,31 @@ namespace Cluefultoys.Sexycodechecker {
             Chain.Add(new Handler<char>(HandleDefault, true));
         }
 
-        private void HandleTab() {
+        private void HandleTab(char target) {
             charactersInLine += 4;
         }
 
-        private void HandleWhitespace() {
+        private void HandleWhitespace(char target) {
             charactersInLine += 1;
         }
 
-        private void HandleDefault() {
+        private void HandleDefault(char target) {
             if (lineStart) {
                 charactersInLine = (reentranceLevel > charactersInLine ? reentranceLevel : charactersInLine);
                 lineStart = false;
             }
-            if (!(StopIfInCharacterHandling(CurrentCharacter))) {
-                if ('{' == CurrentCharacter) {
+            if (!(StopIfInCharacterHandling(target))) {
+                if ('{' == target) {
                     reentranceLevel += 4;
-                } else if ('}' == CurrentCharacter) {
+                } else if ('}' == target) {
                     reentranceLevel -= 4;
                 }
             }
             charactersInLine++;
         }
 
-        protected override bool ValidCharacter() {
-            return CurrentCharacter != Constants.ASCII_CR && CurrentCharacter != Constants.ASCII_EOF;
+        protected override bool ValidCharacter(char target) {
+            return target != Constants.ASCII_CR && target != Constants.ASCII_EOF;
         }
 
         protected override void DoNewLine(Context context) {
@@ -478,15 +418,15 @@ namespace Cluefultoys.Sexycodechecker {
             tailChars.Add(Constants.ASCII_CR);
 
             Chain.Add(new Handler<char>(StopIfInCharacterHandling));
-            Chain.Add(new Handler<char>(RecordLastCharacter, false));            
+            Chain.Add(new Handler<char>(RecordLastCharacter, false));
             Chain.Add(new Handler<char>('(', HandleParensLevelUp, false));
             Chain.Add(new Handler<char>(')', HandleParensLevelDown, false));
             Chain.Add(new Handler<char>(RecordFirstCharacter, false));
         }
 
-        private void RecordFirstCharacter() {
+        private void RecordFirstCharacter(char target) {
             if (firstCharacterInLine == Constants.ASCII_CR) {
-                firstCharacterInLine = CurrentCharacter;
+                firstCharacterInLine = target;
             }
         }
 
@@ -533,13 +473,13 @@ namespace Cluefultoys.Sexycodechecker {
             Chain.Add(new Handler<char>('}', HandleParensLevelDown, true));
         }
 
-        private void HandleCommas() {
+        private void HandleCommas(char target) {
             if (ParensLevel < 1) {
                 commas++;
             }
         }
 
-        private void HandleSemiColumns() {
+        private void HandleSemiColumns(char target) {
             if (ParensLevel < 1) {
                 semiColumns++;
             }
@@ -598,23 +538,23 @@ namespace Cluefultoys.Sexycodechecker {
             Chain.Add(new Handler<char>('}', HandleReentranceDown, true));
         }
 
-        private void HandleMethodEnter() {
+        private void HandleMethodEnter(char target) {
             if (!inMethod) {
                 methodEnter = true;
             }
         }
 
-        private void HandleMethodExit() {
+        private void HandleMethodExit(char target) {
             if (!inMethod) {
                 methodExit = true;
             }
         }
 
-        private void HandleReentranceUp() {
+        private void HandleReentranceUp(char target) {
             myReentrance++;
         }
 
-        private void HandleReentranceDown() {
+        private void HandleReentranceDown(char target) {
             myReentrance--;
             if (inMethod && myReentrance < myMethodReentranceStart) {
                 if (myMethodLength > 20) {
@@ -650,7 +590,7 @@ namespace Cluefultoys.Sexycodechecker {
             Context.AddViolation(new Violation(ViolationType.MethodTooLong, message, Context.FileLenght, originalMethodLine));
         }
 
-        protected void Record() {
+        protected void Record(char target) {
             iHaveCode = true;
         }
 
@@ -676,7 +616,7 @@ namespace Cluefultoys.Sexycodechecker {
 
         private List<string> stopWords = new List<string>();
 
-        private void HandleNewWord() {
+        private void HandleNewWord(char target) {
             if (wordLenght == 0) {
                 return;
             }
@@ -689,15 +629,15 @@ namespace Cluefultoys.Sexycodechecker {
             isCurrentNumericConstant = false;
         }
 
-        private void RecordWord() {
-            if (char.IsWhiteSpace(CurrentCharacter)) {
+        private void RecordWord(char target) {
+            if (char.IsWhiteSpace(target)) {
                 return;
             }
-            if (wordLenght == 0 && (char.IsDigit(CurrentCharacter) || !char.IsLetterOrDigit(CurrentCharacter))) {
+            if (wordLenght == 0 && (char.IsDigit(target) || !char.IsLetterOrDigit(target))) {
                 isCurrentNumericConstant = true;
             }
             wordLenght++;
-            currentWord += CurrentCharacter;
+            currentWord += target;
         }
 
         private void VariableTooShort() {
@@ -709,10 +649,10 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         protected override void DoNewLine(Context context) {
-            HandleNewWord();
+            HandleNewWord(Constants.ASCII_LF);
         }
         
-        protected override bool ValidCharacter() {
+        protected override bool ValidCharacter(char target) {
             return true;
         }
     }

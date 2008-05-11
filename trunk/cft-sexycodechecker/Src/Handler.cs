@@ -10,8 +10,7 @@ using System.Collections.Generic;
 
 namespace Cluefultoys.Sexycodechecker {
 
-    // TODO public delegate void Executor<T>(T target);
-    public delegate void Executor();
+    public delegate void Executor<T>(T target);
 
     public delegate bool Check<T>(T target);
 
@@ -21,17 +20,17 @@ namespace Cluefultoys.Sexycodechecker {
 
         private Check<T> condition;
 
-        private Executor toExecute;
+        private Executor<T> toExecute;
 
         private bool stop;
 
-        public Handler(Executor executeAsDefault, bool stop) {
+        public Handler(Executor<T> executeAsDefault, bool stop) {
             this.condition = DefaultCondition;
             this.toExecute = executeAsDefault;
             this.stop = stop;
         }
 
-        public Handler(Check<T> condition, Executor toExecute, bool stop) {
+        public Handler(Check<T> condition, Executor<T> toExecute, bool stop) {
             this.condition = condition;
             this.toExecute = toExecute;
             this.stop = stop;
@@ -43,7 +42,7 @@ namespace Cluefultoys.Sexycodechecker {
             this.stop = true;
         }
 
-        public Handler(T targetToHandle, Executor toExecute, bool stop) {
+        public Handler(T targetToHandle, Executor<T> toExecute, bool stop) {
             this.toHandle = targetToHandle;
             this.condition = SimpleCheck;
             this.toExecute = toExecute;
@@ -60,13 +59,13 @@ namespace Cluefultoys.Sexycodechecker {
 
         public bool Handle(T target) {
             if (condition(target)) {
-                toExecute();
+                toExecute(target);
                 return stop;
             }
             return false;
         }
 
-        private void DefaultExecution() {
+        private void DefaultExecution(T target) {
             // No-operation executor, for stop-only conditions.
         }
     }

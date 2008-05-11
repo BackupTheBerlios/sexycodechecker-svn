@@ -90,10 +90,6 @@ namespace Cluefultoys.Sexycodechecker {
         
         private Context context = new Context();
         
-        private IRule contextSetup;
-        
-        private IRule contextTeardown;
-        
         private List<IRule> rules;
 
         public ContextHandler() {
@@ -106,22 +102,19 @@ namespace Cluefultoys.Sexycodechecker {
             rules.Add(new MethodHeightRule());
             rules.Add(new VariableLenghtRule());
             
-            contextSetup = new ContextSetup();
-            contextTeardown = new ContextTeardown();
         }
         
         public void AnalyzeCharacter(char character) {
-            contextSetup.Check(character, context);
+            context.DoSetup(character);
             foreach (IRule rule in rules) {
                 rule.Check(character, context);
             }
-            contextTeardown.Check(character, context);
+            context.DoTeardown(character);
         }
         
         public Results CloseStream(string fileName) {
             Results results = new Results(fileName);
 
-            contextSetup.Close(context);
             foreach (IRule rule in rules) {
                 rule.Close(context);
             }
