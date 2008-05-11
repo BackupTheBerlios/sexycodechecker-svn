@@ -28,22 +28,16 @@ namespace Cluefultoys.Sexycodechecker {
     /// </summary>
     public class Checker {
 
-        private List<Rule> rules;
-        
         private EncodingSelector selector;
+        
+        private ContextHandler contextHandler;
 
         public Checker() {
             InitializeRuleset();
         }
         
         private void InitializeRuleset() {
-            rules = new List<Rule>();
-            rules.Add(new HeightRule());
-            rules.Add(new WidthRule());
-            rules.Add(new OneStatementPerLineRule());
-            rules.Add(new OneLinePerStatementRule());
-            rules.Add(new MethodHeightRule());
-            rules.Add(new VariableLenghtRule());
+            contextHandler = new ContextHandler();
             
             selector = new EncodingSelector();
         }
@@ -73,30 +67,69 @@ namespace Cluefultoys.Sexycodechecker {
         private Results Check(Stream stream, byte[] buffer, Encoding encoding, string fileName) {
             int theOffset = selector.ByteCount(encoding);
             Decoder decoder = encoding.GetDecoder();
-            Results results = new Results(fileName);
             char[] charBuffer = new char[1024];
-            Context context = new Context();
             while (stream.Position < stream.Length) {
                 int bytesRead = stream.Read(buffer, theOffset, buffer.Length - theOffset);
                 int charDecoded = decoder.GetChars(buffer, 0, bytesRead + theOffset, charBuffer, 0);
-                AnalyzeCharacters(charBuffer, charDecoded, context);
+                AnalyzeCharacters(charBuffer, charDecoded);
                 theOffset = 0;
             }
-            foreach (Rule rule in rules) {
+
+            return contextHandler.CloseStream(fileName);
+        }
+        
+        private void AnalyzeCharacters(char[] charBuffer, int charDecoded) {
+            for (int index = 0; index < charDecoded; index++) {
+                char currentCharacter = charBuffer[index];
+                contextHandler.AnalyzeCharacter(currentCharacter);
+            }
+        }
+    }
+    
+    public class ContextHandler {
+        
+        private Context context = new Context();
+        
+        private IRule contextSetup;
+        
+        private IRule contextTeardown;
+        
+        private List<IRule> rules;
+
+        public ContextHandler() {
+            rules = new List<IRule>();
+
+            rules.Add(new HeightRule());
+            rules.Add(new WidthRule());
+            rules.Add(new OneStatementPerLineRule());
+            rules.Add(new OneLinePerStatementRule());
+            rules.Add(new MethodHeightRule());
+            rules.Add(new VariableLenghtRule());
+            
+            contextSetup = new ContextSetup();
+            contextTeardown = new ContextTeardown();
+        }
+        
+        public void AnalyzeCharacter(char character) {
+            contextSetup.Check(character, context);
+            foreach (IRule rule in rules) {
+                rule.Check(character, context);
+            }
+            contextTeardown.Check(character, context);
+        }
+        
+        public Results CloseStream(string fileName) {
+            Results results = new Results(fileName);
+
+            contextSetup.Close(context);
+            foreach (IRule rule in rules) {
                 rule.Close(context);
             }
+            
             context.ReportViolations(results);
             return results;
         }
         
-        private void AnalyzeCharacters(char[] charBuffer, int charDecoded, Context context) {
-            for (int index = 0; index < charDecoded; index++) {
-                char currentCharacter = charBuffer[index];
-                foreach (Rule rule in rules) {
-                    rule.Check(currentCharacter, context);
-                }
-            }
-        }
     }
     
     public class EncodingSelector {

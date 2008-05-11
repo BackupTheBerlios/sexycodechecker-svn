@@ -100,18 +100,21 @@ namespace Cluefultoys.Sexycodechecker.Tests {
 
     internal class TestCheckerMockLine : HeightRule {
 
-        public bool IsInMultilineComment {
-            get {
-                return iAmInMultilineComment;
-            }
+        private IRule setup = new ContextSetup();
+        private IRule teardown = new ContextTeardown();
+                
+        public override void Close(Context context) {
+            setup.Close(context);
+            base.Close(context);
+            teardown.Close(context);
         }
-
-        public bool IsInComment {
-            get {
-                return iAmInComment;
-            }
+        
+        public override void Check(char currentCharacter, Context context) {
+            setup.Check(currentCharacter, context);
+            base.Check(currentCharacter, context);
+            teardown.Check(currentCharacter, context);
         }
-
+        
     }
 
     [TestFixture]
@@ -165,12 +168,12 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             lineChecker.Check('/', context);
             lineChecker.Check('*', context);
             lineChecker.Check('\n', context);
-            Assert.AreEqual(true, lineChecker.IsInMultilineComment);
+            Assert.AreEqual(true, context.IAmInMultilineComment);
             Assert.AreEqual(false, lineChecker.HasCode);
             lineChecker.Check('*', context);
             lineChecker.Check('/', context);
             lineChecker.Check('\n', context);
-            Assert.AreEqual(false, lineChecker.IsInMultilineComment);
+            Assert.AreEqual(false, context.IAmInMultilineComment);
             Assert.AreEqual(false, lineChecker.HasCode);
         }
     }
@@ -530,6 +533,12 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             CallCheck(GetFileName("Rule3Case02FOKArrayDefinitions.cs"));
             IsHot();
         }
+
+        public void Rule3Case02GOKRegionDefinitions() {
+            CallCheck(GetFileName("Rule3Case02GOKRegionDefinitions.cs"));
+            IsHot();
+        }
+
     }
 
     [TestFixture]

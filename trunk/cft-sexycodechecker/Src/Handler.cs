@@ -10,6 +10,7 @@ using System.Collections.Generic;
 
 namespace Cluefultoys.Sexycodechecker {
 
+    // TODO public delegate void Executor<T>(T target);
     public delegate void Executor();
 
     public delegate bool Check<T>(T target);
