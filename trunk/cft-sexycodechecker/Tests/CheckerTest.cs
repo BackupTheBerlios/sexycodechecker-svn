@@ -529,11 +529,18 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             IsHot();
         }
 
+        [Test]
         public void Rule3Case02GOKRegionDefinitions() {
             CallCheck(GetFileName("Rule3Case02GOKRegionDefinitions.cs"));
             IsHot();
         }
 
+        [Test]
+        public void Rule3Case02HOKMultipleInterfaces() {
+            CallCheck(GetFileName("Rule3Case02HOKMultipleInterfaces.cs"));
+            IsHot();
+        }
+        
     }
 
     [TestFixture]

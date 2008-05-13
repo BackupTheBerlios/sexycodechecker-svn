@@ -248,7 +248,7 @@ namespace Cluefultoys.Sexycodechecker {
         void Check(char currentCharacter, Context context);
         
     }
-       
+    
     public abstract class AbstractRule : IRule {
 
         protected AbstractRule() {
@@ -494,10 +494,13 @@ namespace Cluefultoys.Sexycodechecker {
         private int semiColumns;
 
         private int commas;
+        
+        private bool isInterfaceDef;
 
         public OneStatementPerLineRule() {
             Chain.Add(new Handler<char>(StopIfInCharacterHandling));
             Chain.Add(new Handler<char>(RecordLastCharacter, false));
+            Chain.Add(new Handler<char>(':', HandleColumns, true));
             Chain.Add(new Handler<char>(',', HandleCommas, true));
             Chain.Add(new Handler<char>(';', HandleSemiColumns, true));
             Chain.Add(new Handler<char>('{', HandleParensLevelUp, true));
@@ -508,8 +511,12 @@ namespace Cluefultoys.Sexycodechecker {
             Chain.Add(new Handler<char>('}', HandleParensLevelDown, true));
         }
 
+        private void HandleColumns(char target) {
+            isInterfaceDef = true;
+        }
+        
         private void HandleCommas(char target) {
-            if (ParensLevel < 1) {
+            if (ParensLevel < 1 && !isInterfaceDef) {
                 commas++;
             }
         }
@@ -527,6 +534,7 @@ namespace Cluefultoys.Sexycodechecker {
             }
             semiColumns = 0;
             commas = 0;
+            isInterfaceDef = false;
         }
         
         private Violation OneStatementPerLine() {
