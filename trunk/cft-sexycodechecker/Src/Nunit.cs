@@ -13,7 +13,7 @@ namespace Cluefultoys.Nunit {
 
         protected const string SourceRoot = "SourceRoot";
 
-        protected const string ParametersNamespace = "http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd";
+        protected const string ParametersNamespace = "http://limacat.googlepages.com/cluefultoys/tests/parameters.xsd";
 
         protected abstract string SourceRootPath {
             get;

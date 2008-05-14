@@ -34,18 +34,18 @@ namespace Cluefultoys.Xml {
         private Utilities() {
         }
 
-        private const string localNamespace = "ns1";
+        private const string namespacePrefix = "ns1";
 
-        private static string GetXPathQuery(string namespaceHandle, string element) {
-            return "//" + namespaceHandle + ":" + element;
+        private static string GetXPathQuery(string namespaceUri, string element) {
+            return "//" + namespaceUri + ":" + element;
         }
 
-        public static string GetString(Stream stream, string namespaceHandle, string element) {
+        public static string GetString(Stream stream, string namespaceUri, string element) {
             XmlDocument document = new XmlDocument();
             document.Load(stream);
             XmlNamespaceManager namespaceManager = new XmlNamespaceManager(document.NameTable);
-            namespaceManager.AddNamespace(localNamespace, namespaceHandle);
-            XmlNode node = document.SelectSingleNode(GetXPathQuery(localNamespace, element), namespaceManager);
+            namespaceManager.AddNamespace(namespacePrefix, namespaceUri);
+            XmlNode node = document.SelectSingleNode(GetXPathQuery(namespacePrefix, element), namespaceManager);
 
             if (node == null) {
                 node = document.SelectSingleNode("//" + element);

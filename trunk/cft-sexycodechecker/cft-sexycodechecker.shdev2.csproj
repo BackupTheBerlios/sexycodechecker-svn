@@ -42,7 +42,7 @@
     <Compile Include="Src\Xml.cs" />
     <Compile Include="Tests\CheckerTest.cs" />
     <Compile Include="Tests\CommandLineTest.cs" />
-    <Compile Include="Tests\ConfigurationTest.cs" />
+    <Compile Include="Tests\XmlTest.cs" />
     <Compile Include="Tests\ProjectTest.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,8 @@
  */
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Xml;
+
 
 using Cluefultoys.Streams;
 namespace Cluefultoys.Sexycodechecker {
@@ -32,11 +34,11 @@ namespace Cluefultoys.Sexycodechecker {
         public Checker() {
             InitializeRuleset();
         }
-        
+
         private void InitializeRuleset() {
             context = new Context();
         }
-        
+
         public Results CheckFile(string fileName) {
             Results results;
             try {
@@ -64,14 +66,71 @@ namespace Cluefultoys.Sexycodechecker {
 
             return context.DoClose(fileName);
         }
-        
+
         private void AnalyzeCharacters(char[] charBuffer, int charDecoded) {
             for (int index = 0; index < charDecoded; index++) {
                 context.AnalyzeCharacter(charBuffer[index]);
             }
         }
     }
-    
+
+    // TODO: I do not like this architecture.
+    public class MsBuildReader {
+
+        private const string msBuildPrefix = "MsBuild";
+        private const string msBuildNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
+
+        private const string sccBuildPrefix = "Scc";
+        private const string sccBuildNamespace = "http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd";
+
+        private const string matchIncludes = "//MsBuild:ItemGroup/MsBuild:Compile[contains(@Include,'.cs')]/@Include";
+        private const string matchExcludes = "//MsBuild:Compile[@Scc:Ignore!='false']/@Include";
+
+        private XmlDocument document;
+        private XmlNamespaceManager namespaceManager;
+        private string configurationDir;
+
+        public MsBuildReader(string configurationFile) {
+            using (Stream stream = File.Open(configurationFile, FileMode.Open)) {
+                configurationDir = configurationFile.Substring(0, configurationFile.LastIndexOf('/'));
+                document = new XmlDocument();
+                document.Load(stream);
+
+                namespaceManager = new XmlNamespaceManager(document.NameTable);
+                namespaceManager.AddNamespace(msBuildPrefix, msBuildNamespace);
+                namespaceManager.AddNamespace(sccBuildPrefix, sccBuildNamespace);
+            }
+        }
+
+        public Collection<string> GetFilesToInclude() {
+            Collection<string> temp = new Collection<string>();
+
+            AddAll(matchIncludes, temp);
+            RemoveAll(matchExcludes, temp);
+
+            Collection<string> result = new Collection<string>();
+            foreach (string xxx in temp) {
+                result.Add(string.Format("{0}/{1}", configurationDir, xxx));
+            }
+            return result;
+        }
+
+        private void RemoveAll(string query, Collection<string> result) {
+            XmlNodeList list2 = document.SelectNodes(query, namespaceManager);
+            foreach (XmlNode compile in list2) {
+                result.Remove(compile.Value);
+            }
+        }
+
+        private void AddAll(string query, Collection<string> result) {
+            XmlNodeList list = document.SelectNodes(query, namespaceManager);
+            foreach (XmlNode compile in list) {
+                result.Add(compile.Value);
+            }
+        }
+
+    }
+
     public class Results {
 
         public Results(string fileName) {
@@ -86,7 +145,7 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         private Collection<Violation> myViolations = new Collection<Violation>();
-        public  Collection<Violation> Violations {
+        public Collection<Violation> Violations {
             get {
                 return myViolations;
             }
@@ -144,12 +203,12 @@ namespace Cluefultoys.Sexycodechecker {
         MethodTooLong,          // rule 4
         VariableTooShort,       // rule 5
     }
-    
+
     internal sealed class Constants {
 
         private Constants() {
         }
-        
+
         internal const int NO_LINE = 0;
 
         internal const int ALLOWABLE_CHARACTERS_PER_LINE = 128;
