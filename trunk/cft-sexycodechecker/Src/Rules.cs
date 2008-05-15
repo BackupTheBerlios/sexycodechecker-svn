@@ -12,243 +12,14 @@ using System.Globalization;
 using Cluefultoys.Handlers;
 namespace Cluefultoys.Sexycodechecker {
 
-    public class Context {
-        
-        // From ContextHandler
-        private List<IRule> rules;
-
-        private Collection<Violation> violations = new Collection<Violation>();
-        
-        public void AddViolation(Violation violation) {
-            violations.Add(violation);
-        }
-        
-        public void ReportViolations(Results toResults) {
-            foreach (Violation violation in violations) {
-                toResults.Add(violation);
-            }
-        }
-
-        private char myPreviousCharacter = Constants.ASCII_CR;
-        public char PreviousCharacter {
-            get {
-                return myPreviousCharacter;
-            }
-        }
-
-        private bool myInCharDefinition;
-        public bool InCharDefinition {
-            get {
-                return myInCharDefinition;
-            }
-        }
-
-        private bool myInStringDefinition;
-        public bool InStringDefinition {
-            get {
-                return myInStringDefinition;
-            }
-        }
-
-        private bool myInDirectiveDefinition;
-        public bool InDirectiveDefinition {
-            get {
-                return myInDirectiveDefinition;
-            }
-        }
-        
-        private bool myIsEscaped;
-        public bool IsEscaped {
-            get {
-                return myIsEscaped;
-            }
-        }
-
-        public bool HandlingString() {
-            return myInCharDefinition || myInStringDefinition || myInDirectiveDefinition;
-        }
-        
-        private int myFileLenght = 1;
-        public int FileLenght {
-            get {
-                return myFileLenght;
-            }
-        }
-
-        private bool myIAmInComment;
-        public bool IAmInComment {
-            get {
-                return myIAmInComment;
-            }
-        }
-
-        private bool myIAmInMultilineComment;
-        public bool IAmInMultilineComment {
-            get {
-                return myIAmInMultilineComment;
-            }
-        }
-
-        private string myCurrentLine = "";
-        public string CurrentLine {
-            get {
-                return myCurrentLine;
-            }
-        }
-
-        private bool myTotallyEmptyLine = true;
-        public bool TotallyEmptyLine {
-            get {
-                return myTotallyEmptyLine;
-            }
-        }
-
-        private bool myBlock;
-        public bool Block {
-            get {
-                return myBlock;
-            }
-        }
-
-        public bool IsInitializingTheBaseClass(char firstCharacterInLine) {
-            bool callingBaseInitializer = (myCurrentLine.Contains("base") || myCurrentLine.Contains("this"));
-            return (firstCharacterInLine == ':' && callingBaseInitializer && myCurrentLine.Contains("("));
-        }
-
-        private char myLastCharacter = Constants.ASCII_CR;
-        public char LastCharacter {
-            get {
-                return myLastCharacter;
-            }
-            set {
-                myLastCharacter = value;
-            }
-        }
-
-        private Chain<char> setupChain;
-
-        private Chain<char> teardownChain;
-
-        public Context() {
-            rules = new List<IRule>();
-
-            rules.Add(new HeightRule());
-            rules.Add(new WidthRule());
-            rules.Add(new OneStatementPerLineRule());
-            rules.Add(new OneLinePerStatementRule());
-            rules.Add(new MethodHeightRule());
-            rules.Add(new VariableLenghtRule());
-
-            setupChain = new Chain<char>();
-            setupChain.Add(new Handler<char>('\'', HandleCharDefinition, true));
-            setupChain.Add(new Handler<char>('"', HandleStringDefinition, true));
-            setupChain.Add(new Handler<char>('#', HandleDirectiveDefinition, true));
-            setupChain.Add(new Handler<char>('/', HandleSlash, true));
-            setupChain.Add(new Handler<char>('*', HandleStar, true));
-            
-            teardownChain = new Chain<char>();
-            teardownChain.Add(new Handler<char>(Constants.ASCII_LF, HandleNewLine, true));
-        }
-
-        // TODO public must go away
-        public void DoSetup(char character) {
-            myCurrentLine += character;
-            if (!char.IsWhiteSpace(character)) {
-                myTotallyEmptyLine = false;
-            }
-            
-            setupChain.Execute(character);
-        }
-        
-        // TODO public must go away
-        public void DoTeardown(char character) {
-            teardownChain.Execute(character);
-            myPreviousCharacter = character;
-            myIsEscaped = !myIsEscaped && (myPreviousCharacter == '\\');
-            myBlock = false;
-
-        }
-
-        // From ContextHandler
-        public void AnalyzeCharacter(char character) {
-            DoSetup(character);
-            foreach (IRule rule in rules) {
-                rule.Check(character, this);
-            }
-            DoTeardown(character);
-        }
-        
-        // From ContextHandler
-        public Results DoClose(string fileName) {
-            Results results = new Results(fileName);
-
-            foreach (IRule rule in rules) {
-                rule.Close(this);
-            }
-            
-            ReportViolations(results);
-            return results;
-        }
-
-        private void HandleCharDefinition(char target) {
-            if (!myIsEscaped && !myInStringDefinition) {
-                myInCharDefinition = !myInCharDefinition;
-            }
-        }
-
-        private void HandleStringDefinition(char target) {
-            if (!myInCharDefinition) {
-                myInStringDefinition = !myInStringDefinition;
-            }
-        }
-        
-        private void HandleDirectiveDefinition(char target) {
-            if (!myInCharDefinition && !myInStringDefinition) {
-                myInDirectiveDefinition = true;
-            }
-        }
-        
-        private void HandleSlash(char target) {
-            if ('/' == myPreviousCharacter && !HandlingString()) {
-                myIAmInComment = true;
-
-            } else if ('*' == myPreviousCharacter && !HandlingString()) {
-                myIAmInMultilineComment = false;
-                myIAmInComment = false;
-            }
-            myBlock = true;
-        }
-
-        private void HandleStar(char target) {
-            if ('/' == myPreviousCharacter && !HandlingString()) {
-                myIAmInMultilineComment = true;
-            }
-            myBlock = true;
-        }
-        
-        private void HandleNewLine(char target) {
-            myIAmInComment = myIAmInMultilineComment;
-            myTotallyEmptyLine = true;
-            myCurrentLine = "";
-            myFileLenght++;
-
-            myInCharDefinition = false;
-            myInStringDefinition = false;
-            myInDirectiveDefinition = false;
-
-            myLastCharacter = Constants.ASCII_CR;
-        }
-        
-    }
-
     public interface IRule {
-        
+
         void Close(Context context);
-        
+
         void Check(char currentCharacter, Context context);
-        
+
     }
-    
+
     public abstract class AbstractRule : IRule {
 
         protected AbstractRule() {
@@ -266,7 +37,7 @@ namespace Cluefultoys.Sexycodechecker {
                 myChain = value;
             }
         }
-        
+
         private Context myContext;
         protected Context Context {
             get {
@@ -288,9 +59,21 @@ namespace Cluefultoys.Sexycodechecker {
             DoNewLine(myContext);
             myParensLevel = 0;
         }
-        
+
+        protected virtual bool HonourBlock {
+            get {
+                return true;
+            }
+        }
+
+        private bool block {
+            get {
+                return HonourBlock && myContext.Block;
+            }
+        }
+
         private bool StopIfBozo(char character) {
-            return myContext.Block || myContext.IAmInMultilineComment || myContext.IAmInComment || !ValidCharacter(character);
+            return block || myContext.IAmInMultilineComment || myContext.IAmInComment || !ValidCharacter(character);
         }
 
         public virtual void Check(char currentCharacter, Context context) {
@@ -309,7 +92,7 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        protected  void HandleParensLevelDown(char target) {
+        protected void HandleParensLevelDown(char target) {
             myParensLevel--;
         }
 
@@ -321,7 +104,7 @@ namespace Cluefultoys.Sexycodechecker {
         protected void RecordLastCharacter(char target) {
             Context.LastCharacter = target;
         }
-        
+
     }
 
     public class HeightRule : AbstractRule {
@@ -329,7 +112,7 @@ namespace Cluefultoys.Sexycodechecker {
         public HeightRule() {
             Chain.Add(new Handler<char>(Record, true));
         }
-        
+
         private int myCodeLenght;
 
         public int CodeLenght {
@@ -379,7 +162,11 @@ namespace Cluefultoys.Sexycodechecker {
 
     public class WidthRule : AbstractRule {
 
-        private int reentranceLevel;
+        protected override bool HonourBlock {
+            get {
+                return false;
+            }
+        }
 
         private int charactersInLine;
 
@@ -387,9 +174,14 @@ namespace Cluefultoys.Sexycodechecker {
 
         private bool lineStart = true;
 
+        private int myReentranceLevel;
+
         public WidthRule() {
             Chain.Add(new Handler<char>('\t', HandleTab, true));
             Chain.Add(new Handler<char>(char.IsWhiteSpace, HandleWhitespace, true));
+            Chain.Add(new Handler<char>(HandleLineStart, false));
+            Chain.Add(new Handler<char>('{', HandleReentranceUp, false));
+            Chain.Add(new Handler<char>('}', HandleReentranceDown, false));
             Chain.Add(new Handler<char>(HandleDefault, true));
         }
 
@@ -401,18 +193,15 @@ namespace Cluefultoys.Sexycodechecker {
             charactersInLine += 1;
         }
 
-        private void HandleDefault(char target) {
+        private void HandleLineStart(char target) {
             if (lineStart) {
+                int reentranceLevel = myReentranceLevel * 4;
                 charactersInLine = (reentranceLevel > charactersInLine ? reentranceLevel : charactersInLine);
                 lineStart = false;
             }
-            if (!(StopIfInCharacterHandling(target))) {
-                if ('{' == target) {
-                    reentranceLevel += 4;
-                } else if ('}' == target) {
-                    reentranceLevel -= 4;
-                }
-            }
+        }
+
+        private void HandleDefault(char target) {
             charactersInLine++;
         }
 
@@ -427,12 +216,24 @@ namespace Cluefultoys.Sexycodechecker {
             charactersInLine = 0;
             lineStart = true;
         }
-        
+
         private void LineTooWide(Context context) {
             string viewLine = context.CurrentLine.Replace(' ', '.');
             string message = "This line is too wide: {0} instead of {1}";
             message = string.Format(CultureInfo.InvariantCulture, message, charactersInLine, maxCharacters);
             context.AddViolation(new Violation(ViolationType.LineTooWide, message, context.FileLenght, viewLine));
+        }
+
+        protected void HandleReentranceDown(char target) {
+            if (!StopIfInCharacterHandling(target)) {
+                myReentranceLevel--;
+            }
+        }
+
+        protected void HandleReentranceUp(char target) {
+            if (!StopIfInCharacterHandling(target)) {
+                myReentranceLevel++;
+            }
         }
 
     }
@@ -485,7 +286,7 @@ namespace Cluefultoys.Sexycodechecker {
         private Violation OneLinePerStatement() {
             string message = "This statement does not end on the current line";
             return new Violation(ViolationType.OneLinePerStatement, message, Context.FileLenght, Context.CurrentLine);
-            
+
         }
     }
 
@@ -494,7 +295,7 @@ namespace Cluefultoys.Sexycodechecker {
         private int semiColumns;
 
         private int commas;
-        
+
         private bool isInterfaceDef;
 
         public OneStatementPerLineRule() {
@@ -514,7 +315,7 @@ namespace Cluefultoys.Sexycodechecker {
         private void HandleColumns(char target) {
             isInterfaceDef = true;
         }
-        
+
         private void HandleCommas(char target) {
             if (ParensLevel < 1 && !isInterfaceDef) {
                 commas++;
@@ -536,7 +337,7 @@ namespace Cluefultoys.Sexycodechecker {
             commas = 0;
             isInterfaceDef = false;
         }
-        
+
         private Violation OneStatementPerLine() {
             string message = "This line has more than one statement";
             return new Violation(ViolationType.OneStatementPerLine, message, Context.FileLenght, Context.CurrentLine);
@@ -694,10 +495,10 @@ namespace Cluefultoys.Sexycodechecker {
         protected override void DoNewLine(Context context) {
             HandleNewWord(Constants.ASCII_LF);
         }
-        
+
         protected override bool ValidCharacter(char target) {
             return true;
         }
     }
-    
+
 }

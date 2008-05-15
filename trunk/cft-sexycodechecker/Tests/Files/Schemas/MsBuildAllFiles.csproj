@@ -1,10 +1,10 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:Scc="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:SccBuild="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
   <PropertyGroup>
     <ProjectGuid>{BANG!}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="I1.cs" Scc:Ignore="false"/>
+    <Compile Include="I1.cs" SccBuild:Ignore="false"/>
     <Compile Include="I2.cs" />
   </ItemGroup>
   <ItemGroup>

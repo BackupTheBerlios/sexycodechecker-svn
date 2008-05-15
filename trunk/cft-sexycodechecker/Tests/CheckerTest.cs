@@ -410,6 +410,7 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             // it shouldn't be hot only for a question of method length, if it gets more than one
             // violation then there is an error outside the test
             IsNot();
+            
             Assert.AreEqual(1, results.Violations.Count);
             Assert.AreEqual(ViolationType.MethodTooLong, results.Violations[0].KindOfViolation);
         }
@@ -419,6 +420,18 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             // string { } and character { } should not count against re-entrances in code
             CallCheck(GetFileName("Rule2Bug200804008.cs"));
             IsHot();
+        }
+
+        [Test]
+        public void Rule2Bug200805003() {
+            // else and catch statements should count against re-entrances in code
+            CallCheck(GetFileName("Rule2Bug200805003.cs"));
+            // it shouldn't be hot only for a question of method length, if it gets more than one
+            // violation then there is an error outside the test
+            IsNot();
+            Assert.AreEqual(2, results.Violations.Count);
+            Assert.AreEqual(ViolationType.LineTooWide, results.Violations[0].KindOfViolation);
+            Assert.AreEqual(ViolationType.LineTooWide, results.Violations[1].KindOfViolation);
         }
 
     }

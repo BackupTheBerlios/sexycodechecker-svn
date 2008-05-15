@@ -5,12 +5,13 @@
  * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Xml;
 
-
 using Cluefultoys.Streams;
+using Cluefultoys.Handlers;
 namespace Cluefultoys.Sexycodechecker {
 
     // TODO: name
@@ -77,14 +78,15 @@ namespace Cluefultoys.Sexycodechecker {
     // TODO: I do not like this architecture.
     public class MsBuildReader {
 
-        private const string msBuildPrefix = "MsBuild";
-        private const string msBuildNamespace = "http://schemas.microsoft.com/developer/msbuild/2003";
+        private static string msBuildPrefix = Cluefultoys.Resources.Xml.MsBuildPrefix;
 
-        private const string sccBuildPrefix = "Scc";
-        private const string sccBuildNamespace = "http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd";
+        private static string msBuildNamespace = Cluefultoys.Resources.Xml.MsBuildNamespace;
 
-        private const string matchIncludes = "//MsBuild:ItemGroup/MsBuild:Compile[contains(@Include,'.cs')]/@Include";
-        private const string matchExcludes = "//MsBuild:Compile[@Scc:Ignore!='false']/@Include";
+        private static string sccBuildPrefix = Cluefultoys.Resources.Xml.SccBuildPrefix;
+
+        private static string sccBuildNamespace = Cluefultoys.Resources.Xml.SccBuildNamespace;
+
+        private static string readCompileTags = Cluefultoys.Resources.Xml.XpathReadCompileTags;
 
         private XmlDocument document;
         private XmlNamespaceManager namespaceManager;
@@ -103,23 +105,15 @@ namespace Cluefultoys.Sexycodechecker {
         }
 
         public Collection<string> GetFilesToInclude() {
-            Collection<string> temp = new Collection<string>();
+            Collection<string> tempHolder = new Collection<string>();
 
-            AddAll(matchIncludes, temp);
-            RemoveAll(matchExcludes, temp);
+            AddAll(readCompileTags, tempHolder);
 
             Collection<string> result = new Collection<string>();
-            foreach (string xxx in temp) {
-                result.Add(string.Format("{0}/{1}", configurationDir, xxx));
+            foreach (string tempResult in tempHolder) {
+                result.Add(string.Format("{0}/{1}", configurationDir, tempResult));
             }
             return result;
-        }
-
-        private void RemoveAll(string query, Collection<string> result) {
-            XmlNodeList list2 = document.SelectNodes(query, namespaceManager);
-            foreach (XmlNode compile in list2) {
-                result.Remove(compile.Value);
-            }
         }
 
         private void AddAll(string query, Collection<string> result) {
@@ -222,5 +216,234 @@ namespace Cluefultoys.Sexycodechecker {
         internal const char ASCII_EOF = '\0';
 
     }
+
+    public class Context {
+
+        // From ContextHandler
+        private List<IRule> rules;
+
+        private Collection<Violation> violations = new Collection<Violation>();
+
+        public void AddViolation(Violation violation) {
+            violations.Add(violation);
+        }
+
+        public void ReportViolations(Results toResults) {
+            foreach (Violation violation in violations) {
+                toResults.Add(violation);
+            }
+        }
+
+        private char myPreviousCharacter = Constants.ASCII_CR;
+        public char PreviousCharacter {
+            get {
+                return myPreviousCharacter;
+            }
+        }
+
+        private bool myInCharDefinition;
+        public bool InCharDefinition {
+            get {
+                return myInCharDefinition;
+            }
+        }
+
+        private bool myInStringDefinition;
+        public bool InStringDefinition {
+            get {
+                return myInStringDefinition;
+            }
+        }
+
+        private bool myInDirectiveDefinition;
+        public bool InDirectiveDefinition {
+            get {
+                return myInDirectiveDefinition;
+            }
+        }
+
+        private bool myIsEscaped;
+        public bool IsEscaped {
+            get {
+                return myIsEscaped;
+            }
+        }
+
+        public bool HandlingString() {
+            return myInCharDefinition || myInStringDefinition || myInDirectiveDefinition;
+        }
+
+        private int myFileLenght = 1;
+        public int FileLenght {
+            get {
+                return myFileLenght;
+            }
+        }
+
+        private bool myIAmInComment;
+        public bool IAmInComment {
+            get {
+                return myIAmInComment;
+            }
+        }
+
+        private bool myIAmInMultilineComment;
+        public bool IAmInMultilineComment {
+            get {
+                return myIAmInMultilineComment;
+            }
+        }
+
+        private string myCurrentLine = "";
+        public string CurrentLine {
+            get {
+                return myCurrentLine;
+            }
+        }
+
+        private bool myTotallyEmptyLine = true;
+        public bool TotallyEmptyLine {
+            get {
+                return myTotallyEmptyLine;
+            }
+        }
+
+        private bool myBlock;
+        public bool Block {
+            get {
+                return myBlock;
+            }
+        }
+
+        public bool IsInitializingTheBaseClass(char firstCharacterInLine) {
+            bool callingBaseInitializer = (myCurrentLine.Contains("base") || myCurrentLine.Contains("this"));
+            return (firstCharacterInLine == ':' && callingBaseInitializer && myCurrentLine.Contains("("));
+        }
+
+        private char myLastCharacter = Constants.ASCII_CR;
+        public char LastCharacter {
+            get {
+                return myLastCharacter;
+            }
+            set {
+                myLastCharacter = value;
+            }
+        }
+
+        private Chain<char> setupChain;
+
+        private Chain<char> teardownChain;
+
+        public Context() {
+            rules = new List<IRule>();
+
+            rules.Add(new HeightRule());
+            rules.Add(new WidthRule());
+            rules.Add(new OneStatementPerLineRule());
+            rules.Add(new OneLinePerStatementRule());
+            rules.Add(new MethodHeightRule());
+            rules.Add(new VariableLenghtRule());
+
+            setupChain = new Chain<char>();
+            setupChain.Add(new Handler<char>('\'', HandleCharDefinition, true));
+            setupChain.Add(new Handler<char>('"', HandleStringDefinition, true));
+            setupChain.Add(new Handler<char>('#', HandleDirectiveDefinition, true));
+            setupChain.Add(new Handler<char>('/', HandleSlash, true));
+            setupChain.Add(new Handler<char>('*', HandleStar, true));
+
+            teardownChain = new Chain<char>();
+            teardownChain.Add(new Handler<char>(Constants.ASCII_LF, HandleNewLine, true));
+        }
+
+        // TODO public must go away
+        public void DoSetup(char character) {
+            myCurrentLine += character;
+            if (!char.IsWhiteSpace(character)) {
+                myTotallyEmptyLine = false;
+            }
+
+            setupChain.Execute(character);
+        }
+
+        // TODO public must go away
+        public void DoTeardown(char character) {
+            teardownChain.Execute(character);
+            myPreviousCharacter = character;
+            myIsEscaped = !myIsEscaped && (myPreviousCharacter == '\\');
+            myBlock = false;
+
+        }
+
+        // From ContextHandler
+        public void AnalyzeCharacter(char character) {
+            DoSetup(character);
+            foreach (IRule rule in rules) {
+                rule.Check(character, this);
+            }
+            DoTeardown(character);
+        }
+
+        // From ContextHandler
+        public Results DoClose(string fileName) {
+            Results results = new Results(fileName);
+
+            foreach (IRule rule in rules) {
+                rule.Close(this);
+            }
+
+            ReportViolations(results);
+            return results;
+        }
+
+        private void HandleCharDefinition(char target) {
+            if (!myIsEscaped && !myInStringDefinition) {
+                myInCharDefinition = !myInCharDefinition;
+            }
+        }
+
+        private void HandleStringDefinition(char target) {
+            if (!myInCharDefinition) {
+                myInStringDefinition = !myInStringDefinition;
+            }
+        }
+
+        private void HandleDirectiveDefinition(char target) {
+            if (!myInCharDefinition && !myInStringDefinition) {
+                myInDirectiveDefinition = true;
+            }
+        }
+
+        private void HandleSlash(char target) {
+            if ('/' == myPreviousCharacter && !HandlingString()) {
+                myIAmInComment = true;
+            } else if ('*' == myPreviousCharacter && !HandlingString()) {
+                myIAmInMultilineComment = false;
+                myIAmInComment = false;
+            }
+            myBlock = true;
+        }
+
+        private void HandleStar(char target) {
+            if ('/' == myPreviousCharacter && !HandlingString()) {
+                myIAmInMultilineComment = true;
+            }
+            myBlock = true;
+        }
+
+        private void HandleNewLine(char target) {
+            myIAmInComment = myIAmInMultilineComment;
+            myTotallyEmptyLine = true;
+            myCurrentLine = "";
+            myFileLenght++;
+
+            myInCharDefinition = false;
+            myInStringDefinition = false;
+            myInDirectiveDefinition = false;
+
+            myLastCharacter = Constants.ASCII_CR;
+        }
+
+    }
+
 
 }
