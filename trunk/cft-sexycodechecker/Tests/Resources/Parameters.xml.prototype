@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Parameters xmlns="http://limacat.googlepages.com/Cluefultoys/Tests/Parameters.xsd">
+<Parameters xmlns="http://limacat.googlepages.com/cluefultoys/tests/parameters.xsd">
 <!-- 
        SourcePath: path to your project directory: Remember final slash or backslash
        linux-mono: /home/cat/Works/Mono/cft-sexycodechecker/cft-sexycodechecker/

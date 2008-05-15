@@ -22,14 +22,14 @@ namespace Cluefultoys.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "2.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Xml {
+    internal class XmlProperties {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Xml() {
+        internal XmlProperties() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Cluefultoys.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Cluefultoys.Resources.Xml", typeof(Xml).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Cluefultoys.Resources.XmlProperties", typeof(XmlProperties).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -97,7 +97,7 @@ namespace Cluefultoys.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to //MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;)]/@Include.
+        ///   Looks up a localized string similar to //MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(contains(@Include,&apos;.Designer.cs&apos;)) or @SccBuild:Ignore=&apos;false&apos;) and (not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;)]/@Include.
         /// </summary>
         internal static string XpathReadCompileTags {
             get {

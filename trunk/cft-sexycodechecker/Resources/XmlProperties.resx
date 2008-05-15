@@ -119,22 +119,17 @@
   </resheader>
   <data name="MsBuildNamespace" xml:space="preserve">
     <value>http://schemas.microsoft.com/developer/msbuild/2003</value>
-    <comment>The Ms Build file namespace Uri</comment>
   </data>
   <data name="MsBuildPrefix" xml:space="preserve">
     <value>MsBuild</value>
-    <comment>The Ms Build file namespace</comment>
   </data>
   <data name="SccBuildNamespace" xml:space="preserve">
     <value>http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd</value>
-    <comment>The Scc Extensions for Ms Build file namespace Uri</comment>
   </data>
   <data name="SccBuildPrefix" xml:space="preserve">
     <value>SccBuild</value>
-    <comment>The Scc Extensions for Ms Build file namespace</comment>
   </data>
   <data name="XpathReadCompileTags" xml:space="preserve">
-    <value>//MsBuild:Compile[contains(@Include,'.cs') and (not(@SccBuild:Ignore) or @SccBuild:Ignore='false')]/@Include</value>
-    <comment>Reads C# Compilation Tags without SccBuild:Ignore attribute (or SccBuild:Ignore = false)</comment>
+    <value>//MsBuild:Compile[contains(@Include,'.cs') and (not(contains(@Include,'.Designer.cs')) or @SccBuild:Ignore='false') and (not(@SccBuild:Ignore) or @SccBuild:Ignore='false')]/@Include</value>
   </data>
 </root>

@@ -19,10 +19,10 @@ namespace Cluefultoys.Xml {
         private CftConfiguration() {
         }
         
-        public static string GetConfigurationString(string resourceName, string xmlNamespace, string element, Type caller) {
+        public static string GetConfigurationString(string resourceName, string namespaceHandle, string element, Type caller) {
             Assembly assembly = Assembly.GetAssembly(caller);
             using (Stream stream = assembly.GetManifestResourceStream(resourceName)) {
-                return Utilities.GetString(stream, xmlNamespace, element);
+                return Utilities.GetString(stream, namespaceHandle, element);
             }
         }
 
@@ -36,16 +36,16 @@ namespace Cluefultoys.Xml {
 
         private const string namespacePrefix = "ns1";
 
-        private static string GetXPathQuery(string namespaceUri, string element) {
-            return "//" + namespaceUri + ":" + element;
+        private static string QueryElement(string namespaceHandle, string element) {
+            return "//" + namespaceHandle + ":" + element;
         }
-
-        public static string GetString(Stream stream, string namespaceUri, string element) {
+        
+        public static string GetString(Stream stream, string namespaceHandle, string element) {
             XmlDocument document = new XmlDocument();
             document.Load(stream);
             XmlNamespaceManager namespaceManager = new XmlNamespaceManager(document.NameTable);
-            namespaceManager.AddNamespace(namespacePrefix, namespaceUri);
-            XmlNode node = document.SelectSingleNode(GetXPathQuery(namespacePrefix, element), namespaceManager);
+            namespaceManager.AddNamespace(namespacePrefix, namespaceHandle);
+            XmlNode node = document.SelectSingleNode(QueryElement(namespacePrefix, element), namespaceManager);
 
             if (node == null) {
                 node = document.SelectSingleNode("//" + element);

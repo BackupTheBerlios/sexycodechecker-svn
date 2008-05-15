@@ -4,11 +4,14 @@
  * 
  * This source code is released under the MIT License
  * See Copying.txt for the full details.
+ *
  */
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Xml;
+using System.Globalization;
 
 using Cluefultoys.Streams;
 using Cluefultoys.Handlers;
@@ -76,23 +79,25 @@ namespace Cluefultoys.Sexycodechecker {
     }
 
     // TODO: I do not like this architecture.
-    public class MsBuildReader {
+    public class MSBuildReader {
 
-        private static string msBuildPrefix = Cluefultoys.Resources.Xml.MsBuildPrefix;
+        private static string msBuildPrefix = Cluefultoys.Resources.XmlProperties.MsBuildPrefix;
 
-        private static string msBuildNamespace = Cluefultoys.Resources.Xml.MsBuildNamespace;
+        private static string msBuildNamespace = Cluefultoys.Resources.XmlProperties.MsBuildNamespace;
 
-        private static string sccBuildPrefix = Cluefultoys.Resources.Xml.SccBuildPrefix;
+        private static string sccBuildPrefix = Cluefultoys.Resources.XmlProperties.SccBuildPrefix;
 
-        private static string sccBuildNamespace = Cluefultoys.Resources.Xml.SccBuildNamespace;
+        private static string sccBuildNamespace = Cluefultoys.Resources.XmlProperties.SccBuildNamespace;
 
-        private static string readCompileTags = Cluefultoys.Resources.Xml.XpathReadCompileTags;
+        private static string readCompileTags = Cluefultoys.Resources.XmlProperties.XpathReadCompileTags;
 
         private XmlDocument document;
+        
         private XmlNamespaceManager namespaceManager;
+        
         private string configurationDir;
 
-        public MsBuildReader(string configurationFile) {
+        public MSBuildReader(string configurationFile) {
             using (Stream stream = File.Open(configurationFile, FileMode.Open)) {
                 configurationDir = configurationFile.Substring(0, configurationFile.LastIndexOf('/'));
                 document = new XmlDocument();
@@ -104,14 +109,14 @@ namespace Cluefultoys.Sexycodechecker {
             }
         }
 
-        public Collection<string> GetFilesToInclude() {
+        public Collection<string> FilesToInclude() {
             Collection<string> tempHolder = new Collection<string>();
 
             AddAll(readCompileTags, tempHolder);
 
             Collection<string> result = new Collection<string>();
             foreach (string tempResult in tempHolder) {
-                result.Add(string.Format("{0}/{1}", configurationDir, tempResult));
+                result.Add(string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, tempResult));
             }
             return result;
         }

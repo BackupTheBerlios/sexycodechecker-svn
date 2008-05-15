@@ -2,7 +2,7 @@
  * Sexy Code Checker: An Implementation of the 700x128 Manifesto
  * By Davide Inglima, 2008.
  * 
- * This source code is released under the MIT License 
+ * This source code is released under the MIT License
  * See Copying.txt for the full details.
  */
 using System;
@@ -83,15 +83,23 @@ namespace Cluefultoys.Xml.Tests {
     [TestFixture]
     public class MsBuildReaderTest : TestParent {
 
-        private MsBuildReader reader;
+        private MSBuildReader reader;
 
+        private string[] expected;
+        
+        private string[] doNotExpect;
+        
         [SetUp]
         protected new void SetUp() {
+            doNotExpect = new string[] { };
+            expected = new string[] { };
         }
 
         [TearDown]
         protected new void TearDown() {
             reader = null;
+            doNotExpect = null;
+            expected = null;
         }
 
         private const string myFilesPath = "Tests/Files/Schemas/";
@@ -129,8 +137,8 @@ namespace Cluefultoys.Xml.Tests {
 
         private void DoTheBuilderCheck(string[] expected, string[] doNotExpect, string configurationFile) {
             string reason;
-            reader = new MsBuildReader(configurationFile);
-            Collection<string> result = reader.GetFilesToInclude();
+            reader = new MSBuildReader(configurationFile);
+            Collection<string> result = reader.FilesToInclude();
             bool foundAll = FoundAllFiles(expected, doNotExpect, result, out reason);
             Assert.That(foundAll, reason);
         }
@@ -144,11 +152,13 @@ namespace Cluefultoys.Xml.Tests {
         private const string I4 = "I4.cs";
 
         private const string IA = "IA.vb";
+        
+        private const string IDDES = "ID.Designer.cs";
 
         [Test]
         public void MsBuildAllFiles() {
-            string[] expected = { I1, I2, I3, I4 };
-            string[] doNotExpect = { IA };
+            expected = new string[] { I1, I2, I3, I4 };
+            doNotExpect = new string[] { IA };
             string configurationFile = GetFileName("MsBuildAllFiles.csproj");
 
             DoTheBuilderCheck(expected, doNotExpect, configurationFile);
@@ -156,13 +166,29 @@ namespace Cluefultoys.Xml.Tests {
 
         [Test]
         public void MsBuildNoFiles() {
-            string[] expected = {  };
-            string[] doNotExpect = { I1, I2, I3, I4, IA };
+            doNotExpect = new string[] { I1, I2, I3, I4, IA };
             string configurationFile = GetFileName("MsBuildNoFiles.csproj");
 
             DoTheBuilderCheck(expected, doNotExpect, configurationFile);
         }
 
+        [Test]
+        public void MsBuildExcludeDesigner() {
+            doNotExpect = new string[] { IDDES };
+            string configurationFile = GetFileName("MsBuildExcludeDesigner.csproj");
+
+            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+        }
+
+        [Test]
+        public void MsBuildForceIncludeDesigner() {
+            expected = new string[] { IDDES };
+            string configurationFile = GetFileName("MsBuildForceIncludeDesigner.csproj");
+
+            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+        }
+
+        
     }
 
     [TestFixture]

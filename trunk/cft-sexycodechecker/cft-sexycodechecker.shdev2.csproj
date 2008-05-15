@@ -34,10 +34,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources\Xml1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Xml.resx</DependentUpon>
+    <Compile Include="Resources\XmlProperties.Designer.cs">
+      <DependentUpon>XmlProperties.resx</DependentUpon>
     </Compile>
     <Compile Include="Src\Checker.cs" />
     <Compile Include="Src\Handler.cs" />
@@ -51,9 +49,9 @@
     <Compile Include="Tests\ProjectTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Xml.resx">
+    <EmbeddedResource Include="Resources\XmlProperties.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Xml1.Designer.cs</LastGenOutput>
+      <LastGenOutput>XmlProperties.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Tests\Resources\FileToEmbed.txt" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -43,3 +44,14 @@ using System.Runtime.InteropServices;
                    because it exposes externally visible types."
  */
 [assembly: CLSCompliant(true)]
+
+/*
+    Category     : Microsoft.Performance  (String)
+    CheckId      : CA1824  (String)
+    Resolution   : "Because assembly 'SexyCodeChecker.exe' contains 
+                   a ResX-based resource file, mark it with the NeutralResourcesLanguage 
+                   attribute, specifying the language of the resources 
+                   within the assembly. This could improve lookup performance 
+                   the first time a resource is retrieved."
+ */
+[assembly: NeutralResourcesLanguageAttribute("en-US",UltimateResourceFallbackLocation.MainAssembly)]
