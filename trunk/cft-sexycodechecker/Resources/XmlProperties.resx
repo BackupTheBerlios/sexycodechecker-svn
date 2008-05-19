@@ -130,6 +130,9 @@
     <value>SccBuild</value>
   </data>
   <data name="XpathReadCompileTags" xml:space="preserve">
-    <value>//MsBuild:Compile[contains(@Include,'.cs') and (not(contains(@Include,'.Designer.cs')) or @SccBuild:Ignore='false') and (not(@SccBuild:Ignore) or @SccBuild:Ignore='false')]/@Include</value>
+    <value>//MsBuild:ItemGroup[not(@SccBuild:Ignore) or @SccBuild:Ignore='false']/MsBuild:Compile[contains(@Include,'.cs') and (not(contains(@Include,'.Designer.cs')) or @SccBuild:Ignore='false') and (not(@SccBuild:Ignore) or @SccBuild:Ignore='false')]/@Include</value>
+  </data>
+  <data name="XpathReadImports" xml:space="preserve">
+    <value>//MsBuild:Import[@SccBuild:Include='true']/@Project</value>
   </data>
 </root>

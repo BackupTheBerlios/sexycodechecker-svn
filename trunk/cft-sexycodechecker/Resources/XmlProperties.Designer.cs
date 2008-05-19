@@ -97,11 +97,20 @@ namespace Cluefultoys.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to //MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(contains(@Include,&apos;.Designer.cs&apos;)) or @SccBuild:Ignore=&apos;false&apos;) and (not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;)]/@Include.
+        ///   Looks up a localized string similar to //MsBuild:ItemGroup[not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;]/MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(contains(@Include,&apos;.Designer.cs&apos;)) or @SccBuild:Ignore=&apos;false&apos;) and (not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;)]/@Include.
         /// </summary>
         internal static string XpathReadCompileTags {
             get {
                 return ResourceManager.GetString("XpathReadCompileTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //MsBuild:Import[@SccBuild:Include=&apos;true&apos;]/@Project.
+        /// </summary>
+        internal static string XpathReadImports {
+            get {
+                return ResourceManager.GetString("XpathReadImports", resourceCulture);
             }
         }
     }

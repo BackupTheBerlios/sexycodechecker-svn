@@ -89,6 +89,10 @@ namespace Cluefultoys.Xml.Tests {
         
         private string[] doNotExpect;
         
+        private string configurationFile;
+        
+        private Collection<string> actual;
+        
         [SetUp]
         protected new void SetUp() {
             doNotExpect = new string[] { };
@@ -100,6 +104,8 @@ namespace Cluefultoys.Xml.Tests {
             reader = null;
             doNotExpect = null;
             expected = null;
+            configurationFile = null;
+            actual = null;
         }
 
         private const string myFilesPath = "Tests/Files/Schemas/";
@@ -110,37 +116,30 @@ namespace Cluefultoys.Xml.Tests {
             }
         }
 
-        private bool FoundAllFiles(string[] expected, string[] doNotExpect, Collection<string> actual, out string reason) {
-            bool foundAllexpected = true;
-            bool notFoundUnexpected = true;
-            reason = "";
+        private string FoundAllFiles() {
+            string reason = "";
             foreach (string check in expected) {
                 string completeFile = GetFileName(check);
-                foundAllexpected = actual.Contains(completeFile);
-                if (!foundAllexpected) {
-                    reason = string.Format("{0} was not found inside the result collection", check);
-                    break;
+                if (!actual.Contains(completeFile)) {
+                    reason += string.Format("[{0} was not found inside the result collection]", check);
                 }
             }
 
             foreach (string check in doNotExpect) {
                 string completeFile = GetFileName(check);
-                notFoundUnexpected = !(actual.Contains(completeFile));
-                if (!notFoundUnexpected) {
-                    reason = string.Format("{0} was found inside the result collection", check);
-                    break;
+                if (actual.Contains(completeFile)) {
+                    reason += string.Format("[{0} was found inside the result collection]", check);
                 }
             }
 
-            return foundAllexpected && notFoundUnexpected;
+            return reason;
         }
 
-        private void DoTheBuilderCheck(string[] expected, string[] doNotExpect, string configurationFile) {
-            string reason;
+        private void DoTheBuilderCheck() {
             reader = new MSBuildReader(configurationFile);
-            Collection<string> result = reader.FilesToInclude();
-            bool foundAll = FoundAllFiles(expected, doNotExpect, result, out reason);
-            Assert.That(foundAll, reason);
+            actual = reader.FilesToInclude();
+            string reason = FoundAllFiles();
+            Assert.AreEqual("", reason);
         }
 
         private const string I1 = "I1.cs";
@@ -151,6 +150,10 @@ namespace Cluefultoys.Xml.Tests {
 
         private const string I4 = "I4.cs";
 
+        private const string II5 = "I/I5.cs";
+        
+        private const string II6 = "I/I6.cs";
+        
         private const string IA = "IA.vb";
         
         private const string IDDES = "ID.Designer.cs";
@@ -159,36 +162,86 @@ namespace Cluefultoys.Xml.Tests {
         public void MsBuildAllFiles() {
             expected = new string[] { I1, I2, I3, I4 };
             doNotExpect = new string[] { IA };
-            string configurationFile = GetFileName("MsBuildAllFiles.csproj");
+            configurationFile = GetFileName("MsBuildAllFiles.csproj");
 
-            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+            DoTheBuilderCheck();
         }
 
         [Test]
         public void MsBuildNoFiles() {
             doNotExpect = new string[] { I1, I2, I3, I4, IA };
-            string configurationFile = GetFileName("MsBuildNoFiles.csproj");
+            configurationFile = GetFileName("MsBuildNoFiles.csproj");
 
-            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+            DoTheBuilderCheck();
         }
 
         [Test]
         public void MsBuildExcludeDesigner() {
             doNotExpect = new string[] { IDDES };
-            string configurationFile = GetFileName("MsBuildExcludeDesigner.csproj");
+            configurationFile = GetFileName("MsBuildExcludeDesigner.csproj");
 
-            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+            DoTheBuilderCheck();
         }
 
         [Test]
         public void MsBuildForceIncludeDesigner() {
             expected = new string[] { IDDES };
-            string configurationFile = GetFileName("MsBuildForceIncludeDesigner.csproj");
+            configurationFile = GetFileName("MsBuildForceIncludeDesigner.csproj");
 
-            DoTheBuilderCheck(expected, doNotExpect, configurationFile);
+            DoTheBuilderCheck();
         }
 
+        [Test]
+        public void MsBuildNothingGroupsExcluded() {
+            expected = new string[] { IDDES };
+            doNotExpect = new string[] { I1, I2, I3, I4, IA };
+            configurationFile = GetFileName("MsBuildNothingGroupsExcluded.csproj");
+
+            DoTheBuilderCheck();
+        }
+
+        [Test]
+        public void MsBuildPartial() {
+            expected = new string[] { I2, I3 };
+            doNotExpect = new string[] { I1, I4 };
+            configurationFile = GetFileName("MsBuildPartial.csproj");
+
+            DoTheBuilderCheck();
+        }
         
+        [Test]
+        public void MsBuildImportChildAll() {
+            expected = new string[] { II5, II6 };
+            configurationFile = GetFileName("MsBuildImportChildAll.csproj");
+
+            DoTheBuilderCheck();
+        }
+        
+        [Test]
+        public void MsBuildImportChildNothing() {
+            doNotExpect = new string[] { II5, II6 };
+            configurationFile = GetFileName("MsBuildImportChildNothing.csproj");
+
+            DoTheBuilderCheck();
+        }
+        
+        [Test]
+        public void MsBuildAllAndAllChildren() {
+            expected = new string[] { I1, I2, I3, I4, II5, II6 };
+            doNotExpect = new string[] { IA };
+            configurationFile = GetFileName("MsBuildAllAndAllChildren.csproj");
+
+            DoTheBuilderCheck();
+        }
+        
+        [Test]
+        public void MsBuildDoNotImportChild() {
+            doNotExpect = new string[] { II5, II6 };
+            configurationFile = GetFileName("MsBuildDoNotImportChild.csproj");
+
+            DoTheBuilderCheck();
+        }
+
     }
 
     [TestFixture]

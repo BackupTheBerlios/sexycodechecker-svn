@@ -78,7 +78,6 @@ namespace Cluefultoys.Sexycodechecker {
         }
     }
 
-    // TODO: I do not like this architecture.
     public class MSBuildReader {
 
         private static string msBuildPrefix = Cluefultoys.Resources.XmlProperties.MsBuildPrefix;
@@ -90,6 +89,8 @@ namespace Cluefultoys.Sexycodechecker {
         private static string sccBuildNamespace = Cluefultoys.Resources.XmlProperties.SccBuildNamespace;
 
         private static string readCompileTags = Cluefultoys.Resources.XmlProperties.XpathReadCompileTags;
+
+        private static string readImports = Cluefultoys.Resources.XmlProperties.XpathReadImports;
 
         private XmlDocument document;
         
@@ -108,21 +109,33 @@ namespace Cluefultoys.Sexycodechecker {
                 namespaceManager.AddNamespace(sccBuildPrefix, sccBuildNamespace);
             }
         }
-
+        
         public Collection<string> FilesToInclude() {
             Collection<string> tempHolder = new Collection<string>();
-
-            AddAll(readCompileTags, tempHolder);
-
+            AddCompilationTargets(tempHolder);
             Collection<string> result = new Collection<string>();
             foreach (string tempResult in tempHolder) {
                 result.Add(string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, tempResult));
             }
+            
+            ResolveImports(result);
             return result;
         }
-
-        private void AddAll(string query, Collection<string> result) {
-            XmlNodeList list = document.SelectNodes(query, namespaceManager);
+        
+        private void ResolveImports(Collection<string> result) {
+            XmlNodeList importsList = document.SelectNodes(readImports, namespaceManager);
+            foreach (XmlNode import in importsList) {
+                String newImport = string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, import.Value);
+                MSBuildReader newReader = new MSBuildReader(newImport);
+                Collection<string> importResult = newReader.FilesToInclude();
+                foreach (string importedTarget in importResult) {
+                    result.Add(importedTarget);
+                }
+            }
+        }
+        
+        private void AddCompilationTargets(Collection<string> result) {
+            XmlNodeList list = document.SelectNodes(readCompileTags, namespaceManager);
             foreach (XmlNode compile in list) {
                 result.Add(compile.Value);
             }

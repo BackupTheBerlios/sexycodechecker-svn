@@ -1,0 +1,18 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:SccBuild="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <PropertyGroup>
+    <ProjectGuid>{BANG!}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup SccBuild:Ignore="true">
+    <Compile Include="I1.cs" SccBuild:Ignore="false" />
+    <Compile Include="I2.cs" />
+  </ItemGroup>
+  <ItemGroup SccBuild:Ignore="true">
+    <Compile Include="I3.cs" />
+    <Compile Include="I4.cs" />
+  </ItemGroup>
+  <ItemGroup SccBuild:Ignore="false">
+    <Compile Include="IA.vb" />
+    <Compile Include="ID.Designer.cs" SccBuild:Ignore="false"/>
+  </ItemGroup>
+</Project>

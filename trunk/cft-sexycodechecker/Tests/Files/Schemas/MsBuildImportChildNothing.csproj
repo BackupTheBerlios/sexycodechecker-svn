@@ -1,0 +1,7 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" xmlns:SccBuild="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <PropertyGroup>
+    <ProjectGuid>{BANG!}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <Import Project="Import\MsBuildImportNothing.csproj" SccBuild:Include="true" />
+</Project>
