@@ -1,0 +1,3 @@
+﻿<Project xmlns="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <Compile Include="I1.cs" Ignore="false"/>
+</Project>

@@ -1,0 +1,3 @@
+﻿<Project xmlns="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <Import Project="Import\MsBuildImportAll.csproj" Include="true" />
+</Project>

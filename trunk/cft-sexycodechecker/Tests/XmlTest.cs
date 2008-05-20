@@ -86,13 +86,13 @@ namespace Cluefultoys.Xml.Tests {
         private MSBuildReader reader;
 
         private string[] expected;
-        
+
         private string[] doNotExpect;
-        
+
         private string configurationFile;
-        
+
         private Collection<string> actual;
-        
+
         [SetUp]
         protected new void SetUp() {
             doNotExpect = new string[] { };
@@ -151,11 +151,11 @@ namespace Cluefultoys.Xml.Tests {
         private const string I4 = "I4.cs";
 
         private const string II5 = "I/I5.cs";
-        
+
         private const string II6 = "I/I6.cs";
-        
+
         private const string IA = "IA.vb";
-        
+
         private const string IDDES = "ID.Designer.cs";
 
         [Test]
@@ -208,7 +208,7 @@ namespace Cluefultoys.Xml.Tests {
 
             DoTheBuilderCheck();
         }
-        
+
         [Test]
         public void MsBuildImportChildAll() {
             expected = new string[] { II5, II6 };
@@ -216,7 +216,7 @@ namespace Cluefultoys.Xml.Tests {
 
             DoTheBuilderCheck();
         }
-        
+
         [Test]
         public void MsBuildImportChildNothing() {
             doNotExpect = new string[] { II5, II6 };
@@ -224,7 +224,7 @@ namespace Cluefultoys.Xml.Tests {
 
             DoTheBuilderCheck();
         }
-        
+
         [Test]
         public void MsBuildAllAndAllChildren() {
             expected = new string[] { I1, I2, I3, I4, II5, II6 };
@@ -233,13 +233,33 @@ namespace Cluefultoys.Xml.Tests {
 
             DoTheBuilderCheck();
         }
-        
+
         [Test]
         public void MsBuildDoNotImportChild() {
             doNotExpect = new string[] { II5, II6 };
             configurationFile = GetFileName("MsBuildDoNotImportChild.csproj");
 
             DoTheBuilderCheck();
+        }
+
+        [Test]
+        public void MsBuildAllFilesNoOverlay() {
+            expected = new string[] { I1, I2, I3, I4 };
+            doNotExpect = new string[] { IA };
+            configurationFile = GetFileName("MsBuildAllFilesNoOverlay.csproj");
+
+            DoTheBuilderCheck();
+            throw new Exception("Nothing to do!");
+        }
+
+        [Test]
+        public void MsBuildNoFilesNoOverlay() {
+            // change the test!
+            doNotExpect = new string[] { I1, I2, I3, I4, IA };
+            configurationFile = GetFileName("MsBuildNoFilesNoOverlay.csproj");
+
+            DoTheBuilderCheck();
+            throw new Exception("Nothing to do!");
         }
 
     }
