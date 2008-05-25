@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" Ignore="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Tests\CheckerTest.cs" Ignore="true" />
+    <Compile Include="Tests\CommandLineTest.cs" Ignore="true" />
+    <Compile Include="Tests\XmlTest.cs" Ignore="true" />
+    <Compile Include="Tests\ProjectTest.cs" Ignore="true" />
+  </ItemGroup>
+</Project>

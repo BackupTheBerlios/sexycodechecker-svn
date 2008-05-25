@@ -1,6 +1,0 @@
-﻿<Project xmlns="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
-  <ItemGroup>
-    <Compile Include="I/I5.cs" Ignore="I want you to skip this"/>
-    <Compile Include="I/I6.cs" Ignore="And this too" />
-  </ItemGroup>
-</Project>

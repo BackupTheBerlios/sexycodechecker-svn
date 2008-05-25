@@ -97,20 +97,38 @@ namespace Cluefultoys.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to //MsBuild:ItemGroup[not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;]/MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(contains(@Include,&apos;.Designer.cs&apos;)) or @SccBuild:Ignore=&apos;false&apos;) and (not(@SccBuild:Ignore) or @SccBuild:Ignore=&apos;false&apos;)]/@Include.
+        ///   Looks up a localized string similar to //MsBuild:Compile[contains(@Include,&apos;.cs&apos;) and (not(contains(@Include,&apos;.Designer.cs&apos;)))]/@Include.
         /// </summary>
-        internal static string XpathReadCompileTags {
+        internal static string XPathMsBuildCompile {
             get {
-                return ResourceManager.GetString("XpathReadCompileTags", resourceCulture);
+                return ResourceManager.GetString("XPathMsBuildCompile", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to //MsBuild:Import[@SccBuild:Include=&apos;true&apos;]/@Project.
+        ///   Looks up a localized string similar to //SccBuild:Compile[(@Ignore and not(@Ignore=&apos;false&apos;))]/@Include.
         /// </summary>
-        internal static string XpathReadImports {
+        internal static string XPathSccBuildCompileExclude {
             get {
-                return ResourceManager.GetString("XpathReadImports", resourceCulture);
+                return ResourceManager.GetString("XPathSccBuildCompileExclude", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //SccBuild:Compile[@Ignore=&apos;false&apos;]/@Include.
+        /// </summary>
+        internal static string XPathSccBuildCompileInclude {
+            get {
+                return ResourceManager.GetString("XPathSccBuildCompileInclude", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //SccBuild:Import/@Project.
+        /// </summary>
+        internal static string XPathSccBuildImportInclude {
+            get {
+                return ResourceManager.GetString("XPathSccBuildImportInclude", resourceCulture);
             }
         }
     }

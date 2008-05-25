@@ -4,14 +4,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="I1.cs" />
-    <Compile Include="I2.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="I3.cs" />
-    <Compile Include="I4.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="IA.vb" />
+    <Compile Include="ID.Designer.cs" />
   </ItemGroup>
 </Project>

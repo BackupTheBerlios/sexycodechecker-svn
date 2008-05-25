@@ -192,15 +192,6 @@ namespace Cluefultoys.Xml.Tests {
         }
 
         [Test]
-        public void MsBuildNothingGroupsExcluded() {
-            expected = new string[] { IDDES };
-            doNotExpect = new string[] { I1, I2, I3, I4, IA };
-            configurationFile = GetFileName("MsBuildNothingGroupsExcluded.csproj");
-
-            DoTheBuilderCheck();
-        }
-
-        [Test]
         public void MsBuildPartial() {
             expected = new string[] { I2, I3 };
             doNotExpect = new string[] { I1, I4 };
@@ -249,17 +240,14 @@ namespace Cluefultoys.Xml.Tests {
             configurationFile = GetFileName("MsBuildAllFilesNoOverlay.csproj");
 
             DoTheBuilderCheck();
-            throw new Exception("Nothing to do!");
         }
 
         [Test]
         public void MsBuildNoFilesNoOverlay() {
-            // change the test!
-            doNotExpect = new string[] { I1, I2, I3, I4, IA };
+            doNotExpect = new string[] { IA, IDDES };
             configurationFile = GetFileName("MsBuildNoFilesNoOverlay.csproj");
 
             DoTheBuilderCheck();
-            throw new Exception("Nothing to do!");
         }
 
     }

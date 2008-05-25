@@ -7,6 +7,7 @@
  *
  */
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -78,6 +79,118 @@ namespace Cluefultoys.Sexycodechecker {
         }
     }
 
+    public interface IDocumentHolder {
+
+        XmlDocument Document {
+            get;
+        }
+
+        XmlNamespaceManager NamespaceManager {
+            get;
+        }
+
+        XmlNodeList ExecuteSelectNodes(string query);
+
+    }
+
+    public class DocumentHolder : IDocumentHolder {
+
+        private XmlDocument myDocument;
+
+        public XmlDocument Document {
+            get {
+                return myDocument;
+            }
+        }
+
+        private XmlNamespaceManager myNamespaceManager;
+
+        public XmlNamespaceManager NamespaceManager {
+            get {
+                return myNamespaceManager;
+            }
+        }
+
+        // TODO: namespaces should be also passable with a dictionary
+        public DocumentHolder(Stream stream, string prefix, string xmlNamespace) {
+            myDocument = new XmlDocument();
+            myDocument.Load(stream);
+
+            myNamespaceManager = new XmlNamespaceManager(myDocument.NameTable);
+            myNamespaceManager.AddNamespace(prefix, xmlNamespace);
+        }
+
+        public XmlNodeList ExecuteSelectNodes(string query) {
+            XmlNodeList result = myDocument.SelectNodes(query, myNamespaceManager);
+            return result;
+        }
+
+    }
+
+    public class NullDocumentHolder : IDocumentHolder {
+
+        public NullDocumentHolder() {
+            myDocument = new XmlDocument();
+            myNamespaceManager = new XmlNamespaceManager(myDocument.NameTable);
+        }
+
+        private XmlDocument myDocument;
+
+        public XmlDocument Document {
+            get {
+                return myDocument;
+            }
+        }
+
+
+        private XmlNamespaceManager myNamespaceManager;
+
+        public XmlNamespaceManager NamespaceManager {
+            get {
+                return myNamespaceManager;
+            }
+        }
+
+        public XmlNodeList ExecuteSelectNodes(string query) {
+            return new XmlNodeListImpl();
+        }
+
+    }
+
+    public class XmlNodeListImpl : XmlNodeList {
+
+        private static NullEnumerator noEnumerator = new NullEnumerator();
+        
+        public override int Count {
+            get {
+                return 0;
+            }
+        }
+
+        public override IEnumerator GetEnumerator() {
+            return noEnumerator;
+        }
+
+        public override XmlNode Item(int index) {
+            return null;
+        }
+    }
+
+    public class NullEnumerator : IEnumerator {
+        public object Current {
+            get {
+                throw new InvalidOperationException("this iterator has no elements");
+            }
+        }
+
+        public bool MoveNext() {
+            return false;
+        }
+
+        public void Reset() {
+        }
+    }
+
     public class MSBuildReader {
 
         private static string msBuildPrefix = Cluefultoys.Resources.XmlProperties.MsBuildPrefix;
@@ -88,57 +201,84 @@ namespace Cluefultoys.Sexycodechecker {
 
         private static string sccBuildNamespace = Cluefultoys.Resources.XmlProperties.SccBuildNamespace;
 
-        private static string readCompileTags = Cluefultoys.Resources.XmlProperties.XpathReadCompileTags;
+        private static string readCompileTags = Cluefultoys.Resources.XmlProperties.XPathMsBuildCompile;
 
-        private static string readImports = Cluefultoys.Resources.XmlProperties.XpathReadImports;
+        private static string readSccExcludeCompileTags = Cluefultoys.Resources.XmlProperties.XPathSccBuildCompileExclude;
 
-        private XmlDocument document;
-        
-        private XmlNamespaceManager namespaceManager;
-        
+        private static string readSccIncludeCompileTags = Cluefultoys.Resources.XmlProperties.XPathSccBuildCompileInclude;
+
+        private static string readImports = Cluefultoys.Resources.XmlProperties.XPathSccBuildImportInclude;
+
+        private IDocumentHolder project;
+
+        private IDocumentHolder overlay;
+
         private string configurationDir;
 
         public MSBuildReader(string configurationFile) {
+            configurationDir = configurationFile.Substring(0, configurationFile.LastIndexOf('/'));
             using (Stream stream = File.Open(configurationFile, FileMode.Open)) {
-                configurationDir = configurationFile.Substring(0, configurationFile.LastIndexOf('/'));
-                document = new XmlDocument();
-                document.Load(stream);
+                project = new DocumentHolder(stream, msBuildPrefix, msBuildNamespace);
+            }
 
-                namespaceManager = new XmlNamespaceManager(document.NameTable);
-                namespaceManager.AddNamespace(msBuildPrefix, msBuildNamespace);
-                namespaceManager.AddNamespace(sccBuildPrefix, sccBuildNamespace);
+            string overlayFile = string.Format("{0}.overlay", configurationFile);
+            try {
+                using (Stream stream = File.Open(overlayFile, FileMode.Open)) {
+                    overlay = new DocumentHolder(stream, sccBuildPrefix, sccBuildNamespace);
+                }
+            } catch (FileNotFoundException) {
+                overlay = new NullDocumentHolder();
             }
         }
-        
+
         public Collection<string> FilesToInclude() {
+            Collection<string> result = FetchCompilationTargets();
+            ResolveImports(result);
+            return result;
+        }
+
+        private void ResolveImports(Collection<string> result) {
+            XmlNodeList importsList = overlay.ExecuteSelectNodes(readImports);
+            foreach (XmlNode import in importsList) {
+                String newImport = string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, import.Value);
+                LoadFromImportedProject(result, newImport);
+            }
+        }
+
+        private static void LoadFromImportedProject(Collection<string> result, String newImport) {
+            MSBuildReader newReader = new MSBuildReader(newImport);
+            Collection<string> importResult = newReader.FilesToInclude();
+            foreach (string importedTarget in importResult) {
+                result.Add(importedTarget);
+            }
+        }
+
+        private void Include(Collection<string> tempHolder, IDocumentHolder holder, string query) {
+            XmlNodeList nodes = holder.ExecuteSelectNodes(query);
+            foreach (XmlNode node in nodes) {
+                tempHolder.Add(node.Value);
+            }
+        }
+
+        private void Exclude(Collection<string> tempHolder, IDocumentHolder holder, string query) {
+            XmlNodeList nodes = holder.ExecuteSelectNodes(query);
+            foreach (XmlNode node in nodes) {
+                tempHolder.Remove(node.Value);
+            }
+        }
+
+        private Collection<string> FetchCompilationTargets() {
             Collection<string> tempHolder = new Collection<string>();
-            AddCompilationTargets(tempHolder);
+            Include(tempHolder, project, readCompileTags);
+            Include(tempHolder, overlay, readSccIncludeCompileTags);
+            Exclude(tempHolder, overlay, readSccExcludeCompileTags);
+
             Collection<string> result = new Collection<string>();
             foreach (string tempResult in tempHolder) {
                 result.Add(string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, tempResult));
             }
-            
-            ResolveImports(result);
+
             return result;
-        }
-        
-        private void ResolveImports(Collection<string> result) {
-            XmlNodeList importsList = document.SelectNodes(readImports, namespaceManager);
-            foreach (XmlNode import in importsList) {
-                String newImport = string.Format(CultureInfo.InvariantCulture, "{0}/{1}", configurationDir, import.Value);
-                MSBuildReader newReader = new MSBuildReader(newImport);
-                Collection<string> importResult = newReader.FilesToInclude();
-                foreach (string importedTarget in importResult) {
-                    result.Add(importedTarget);
-                }
-            }
-        }
-        
-        private void AddCompilationTargets(Collection<string> result) {
-            XmlNodeList list = document.SelectNodes(readCompileTags, namespaceManager);
-            foreach (XmlNode compile in list) {
-                result.Add(compile.Value);
-            }
         }
 
     }

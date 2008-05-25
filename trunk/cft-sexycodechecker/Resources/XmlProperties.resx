@@ -129,10 +129,16 @@
   <data name="SccBuildPrefix" xml:space="preserve">
     <value>SccBuild</value>
   </data>
-  <data name="XpathReadCompileTags" xml:space="preserve">
-    <value>//MsBuild:ItemGroup[not(@SccBuild:Ignore) or @SccBuild:Ignore='false']/MsBuild:Compile[contains(@Include,'.cs') and (not(contains(@Include,'.Designer.cs')) or @SccBuild:Ignore='false') and (not(@SccBuild:Ignore) or @SccBuild:Ignore='false')]/@Include</value>
+  <data name="XPathMsBuildCompile" xml:space="preserve">
+    <value>//MsBuild:Compile[contains(@Include,'.cs') and (not(contains(@Include,'.Designer.cs')))]/@Include</value>
   </data>
-  <data name="XpathReadImports" xml:space="preserve">
-    <value>//MsBuild:Import[@SccBuild:Include='true']/@Project</value>
+  <data name="XPathSccBuildCompileExclude" xml:space="preserve">
+    <value>//SccBuild:Compile[(@Ignore and not(@Ignore='false'))]/@Include</value>
+  </data>
+  <data name="XPathSccBuildCompileInclude" xml:space="preserve">
+    <value>//SccBuild:Compile[@Ignore='false']/@Include</value>
+  </data>
+  <data name="XPathSccBuildImportInclude" xml:space="preserve">
+    <value>//SccBuild:Import/@Project</value>
   </data>
 </root>

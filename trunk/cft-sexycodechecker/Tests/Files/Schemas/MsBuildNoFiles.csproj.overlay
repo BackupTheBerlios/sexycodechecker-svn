@@ -1,0 +1,7 @@
+﻿<Project xmlns="http://limacat.googlepages.com/cluefultoys/scc/extension/msbuild/parameters.xsd">
+  <Compile Include="I1.cs" Ignore="I expect you to ignore"/>
+  <Compile Include="I2.cs" Ignore="I expect you to ignore"/>
+  <Compile Include="I3.cs" Ignore="I expect you to ignore"/>
+  <Compile Include="I4.cs" Ignore="I expect you to ignore"/>
+  <Compile Include="IA.vb" Ignore="I expect you to ignore"/>
+</Project>

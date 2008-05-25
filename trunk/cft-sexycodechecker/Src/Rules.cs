@@ -246,6 +246,8 @@ namespace Cluefultoys.Sexycodechecker {
 
         private Violation delayViolation;
 
+        private bool isInAttribute = false;
+
         public OneLinePerStatementRule() {
             tailChars.Add(';');
             tailChars.Add(',');
@@ -257,7 +259,14 @@ namespace Cluefultoys.Sexycodechecker {
             Chain.Add(new Handler<char>(RecordLastCharacter, false));
             Chain.Add(new Handler<char>('(', HandleParensLevelUp, false));
             Chain.Add(new Handler<char>(')', HandleParensLevelDown, false));
+            Chain.Add(new Handler<char>('[', HandleAttributeEnter, false));
             Chain.Add(new Handler<char>(RecordFirstCharacter, false));
+        }
+
+        private void HandleAttributeEnter(char target) {
+            if (firstCharacterInLine == Constants.ASCII_CR) {
+                isInAttribute = true;
+            }
         }
 
         private void RecordFirstCharacter(char target) {
@@ -276,7 +285,9 @@ namespace Cluefultoys.Sexycodechecker {
             if ((ParensLevel > 0 || !tailChars.Contains(context.LastCharacter))) {
                 delayViolation = OneLinePerStatement();
                 if (')' != context.LastCharacter) {
-                    context.AddViolation(delayViolation);
+                    if (!(']' == context.LastCharacter && isInAttribute)) {
+                        context.AddViolation(delayViolation);
+                    }
                     delayViolation = null;
                 }
             }

@@ -553,6 +553,12 @@ namespace Cluefultoys.Sexycodechecker.Tests {
             CallCheck(GetFileName("Rule3Case02HOKMultipleInterfaces.cs"));
             IsHot();
         }
+
+        [Test]
+        public void Rule3Case02IOKAttributes() {
+            CallCheck(GetFileName("Rule3Case02IOKAttributes.cs"));
+            IsHot();
+        }
         
     }
 
