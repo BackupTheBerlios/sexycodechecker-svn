@@ -66,8 +66,6 @@ namespace Cluefultoys.Sexycodechecker.Tests {
     [TestFixture]
     public class TestHotProjectByMsBuild : TestParent {
 
-        private MSBuildReader reader;
-
         private const string myFilesPath = "";
         
         private const string configurationFile = "cft-sexycodechecker.csproj";
@@ -79,13 +77,16 @@ namespace Cluefultoys.Sexycodechecker.Tests {
         }
 
         private void DoTheBuilderCheck() {
-            reader = new MSBuildReader(GetFileName(configurationFile));
-            Collection<string> allFiles = reader.FilesToInclude();
-            foreach(string file in allFiles) {
-                Checker checker = new Checker();
-                results = checker.CheckFile(file);
-                IsHot();
+            bool isHot = true;
+            ProjectChecker projectChecker = new ProjectChecker(GetFileName(configurationFile));
+            projectChecker.Run();
+            foreach (Results result in projectChecker.Results) {
+                isHot &= result.Happy;
+                foreach (Violation violation in result.Violations) {
+                    System.Console.Out.WriteLine(violation);
+                }
             }
+            Assert.IsTrue(isHot);
         }
         
         [Test]

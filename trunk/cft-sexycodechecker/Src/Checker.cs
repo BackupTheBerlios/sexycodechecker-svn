@@ -317,6 +317,51 @@ namespace Cluefultoys.Sexycodechecker {
 
     }
 
+    public class ProjectChecker {
+
+        private string myProjectName;
+
+        public string ProjectName {
+            get {
+                return myProjectName;
+            }
+        }
+
+        private Collection<Results> myResults = new Collection<Results>();
+        public Collection<Results> Results {
+            get {
+                return myResults;
+            }
+        }
+
+        private bool isHappy = true;
+        public bool Happy {
+            get {
+                return isHappy;
+            }
+        }
+
+        private string configurationFile;
+
+        public ProjectChecker(string configurationFile) {
+            this.configurationFile = configurationFile;
+            this.myProjectName = configurationFile;
+        }
+
+        public void Run() {
+            myResults = new Collection<Results>();
+            MSBuildReader reader = new MSBuildReader(configurationFile);
+            Collection<string> allFiles = reader.FilesToInclude();
+            foreach (string file in allFiles) {
+                Checker checker = new Checker();
+                Results results = checker.CheckFile(file);
+                isHappy &= results.Happy;
+                myResults.Add(results);
+            }
+        }
+
+    }
+
     public class Violation {
 
         private ViolationType myType;
